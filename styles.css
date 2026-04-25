@@ -77,7 +77,6 @@ main {
 
 .logo-wrap { display: flex; justify-content: center; }
 
-
 .tagline {
     font-size: clamp(12px, 3.5vw, 15px);
     font-weight: 600;
@@ -276,7 +275,6 @@ main {
     pointer-events: none;
 }
 
-
 .update-img-wrap {
     width: 96px;
     flex-shrink: 0;
@@ -292,7 +290,6 @@ main {
     transform: scale(1);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 
 .update-img-placeholder {
     width: 100%;
@@ -459,6 +456,54 @@ main {
     flex-shrink: 0;
 }
 
+/* ===== LOCATION CARD ===== */
+.location-card {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 24px;
+    min-height: unset;
+    background: rgba(4, 2, 10, 0.85);
+    border-color: rgba(255,255,255,0.07);
+}
+
+.location-card .card-icon {
+    font-size: 20px;
+    margin-top: 3px;
+    flex-shrink: 0;
+    width: 26px;
+}
+
+.location-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.location-label {
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white);
+    flex: unset;
+    font-size: clamp(12px, 3.5vw, 14px);
+}
+
+.location-address {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--white-text);
+    line-height: 1.65;
+    text-transform: none;
+    position: relative;
+    z-index: 2;
+}
+
 /* ===== FOOTER ===== */
 footer {
     display: flex;
@@ -488,7 +533,8 @@ footer p {
 .section:nth-child(4) { animation: fadeUp 0.6s ease both 0.32s; }
 .section:nth-child(5) { animation: fadeUp 0.6s ease both 0.38s; }
 .section:nth-child(6) { animation: fadeUp 0.6s ease both 0.44s; }
-footer                { animation: fadeUp 0.6s ease both 0.50s; }
+.section:nth-child(7) { animation: fadeUp 0.6s ease both 0.50s; }
+footer                { animation: fadeUp 0.6s ease both 0.56s; }
 
 /* ===== MOBILE — ≤ 480px ===== */
 @media (max-width: 480px) {
@@ -516,6 +562,8 @@ footer                { animation: fadeUp 0.6s ease both 0.50s; }
 
     .link-card { padding: 18px 18px; min-height: 64px; }
     .card-icon { font-size: 20px; width: 26px; }
+
+    .location-card { padding: 16px 18px; }
 }
 
 /* Very small phones ≤ 360px: stack info row */
