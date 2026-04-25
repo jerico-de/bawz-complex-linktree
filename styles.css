@@ -417,6 +417,7 @@ main {
 .card-label,
 .promo-badge,
 .card-arrow { position: relative; z-index: 2; }
+.card-arrow-promo { position: relative; z-index: 2; }
 
 .card-icon {
     font-size: 22px;
@@ -447,6 +448,24 @@ main {
 
 .link-card:hover .card-arrow,
 .link-card:focus-visible .card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.card-arrow-promo {
+    font-size: 10px;
+    color: var(--white);
+    padding: 6px;
+    background: var(--purple-mid);
+    border-radius: 4px;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.25s, transform 0.25s;
+}
+
+.link-card:hover .card-arrow-promo,
+.link-card:focus-visible .card-arrow-promo {
     opacity: 1;
     transform: translateX(0);
 }
@@ -497,6 +516,36 @@ main {
 .promo-card {
     border-color: rgba(168,85,247,0.35);
     background: linear-gradient(135deg, rgba(91,31,168,0.2) 0%, rgba(8,5,16,0.7) 100%);
+}
+
+.promo-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(255,255,255,0.04) 30%,
+        rgba(255,255,255,0.18) 50%,
+        rgba(255,255,255,0.04) 70%,
+        transparent 100%
+    );
+    transform: skewX(-15deg);
+    transition: none;
+    pointer-events: none;
+    z-index: 3;
+}
+ 
+.promo-card:hover::after {
+    animation: promoFlash 0.55s ease forwards;
+}
+ 
+@keyframes promoFlash {
+    0%   { left: -120%; }
+    100% { left: 160%; }
 }
 
 .promo-badge {
@@ -613,14 +662,12 @@ footer                { animation: fadeUp 0.6s ease both 0.56s; }
         width: calc(100vw - 48px);
     }
 
-    /* Tagline: tighten tracking significantly */
     .tagline {
         font-size: 11px;
         letter-spacing: 0.02em;
         max-width: 300px;
     }
 
-    /* Section labels: the biggest offender at mobile */
     .section-label {
         font-size: 12px;
         letter-spacing: 0.12em;
@@ -637,17 +684,13 @@ footer                { animation: fadeUp 0.6s ease both 0.56s; }
     .social-btn svg { width: 44px; height: 44px; padding: 10px; }
     .social-btn span { display:none; }
 
-    /* Update card */
-    .update-img-wrap { width: 78px; }
-    .update-body { padding: 12px 12px; }
-    .update-tag { font-size: 10px; letter-spacing: 0.08em; }
-    .update-caption { font-size: 11px; }
-
     /* Link cards */
     .link-card { padding: 16px 14px; min-height: 58px; gap: 10px; }
     .card-icon { font-size: 18px; width: 22px; }
     .card-label { font-size: 12px; letter-spacing: 0.04em; }
     .card-arrow { display: none; }
+
+    .update-img-wrap { width: 60px; }
 
     /* Row grid */
     .card-grid--row .link-card { padding: 18px 10px; min-height: 80px; }
@@ -684,7 +727,6 @@ footer                { animation: fadeUp 0.6s ease both 0.56s; }
 
     .card-label { font-size: 10px; letter-spacing: 0.02em; }
 
-    /* Stack row grid vertically */
     .card-grid--row { flex-direction: column; }
     .card-grid--row .link-card {
         flex-direction: row;
@@ -700,7 +742,6 @@ footer                { animation: fadeUp 0.6s ease both 0.56s; }
 /* ===== TOUCH DEVICES ===== */
 @media (hover: none) and (pointer: coarse) {
     .link-card:hover,
-    .update-card:hover { transform: none; }
 
     .link-card:active {
         border-color: var(--purple-glow);
