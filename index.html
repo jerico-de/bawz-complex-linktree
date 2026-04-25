@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Inter:wght@300;400&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -19,7 +19,7 @@
         <header class="hero">
             <div class="logo-wrap">
                 <div class="logo-box">
-                    <img src="assets/logo.png">
+                    <img src="assets/FLAT BAWZ WHITE.png" alt="Bawz Complex Logo" class="logo-img">
                 </div>
             </div>
             <p class="tagline">Welcome to Bawz Complex!<br>The home where communities grow and cultures connect.</p>
@@ -43,6 +43,23 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
                 <span>Email</span>
             </a>
+        </section>
+
+        <!-- UPDATES -->
+        <section class="section">
+            <h2 class="section-label">Updates</h2>
+            <div class="updates-grid">
+                <a href="https://www.instagram.com/bawzcomplex" target="_blank" class="update-card link-card">
+                    <div class="update-img-wrap">
+                        <img src="assets/class-cards.png" alt="Latest post">
+                    </div>
+                    <div class="update-body">
+                        <span class="update-tag">Class Card</span>
+                        <p class="update-caption">Introducing the BAWZ COMPLEX CLASS CARD — designed for those ready to stay consistent and level up.</p>
+                        <span class="card-arrow">→</span>
+                    </div>
+                </a>
+            </div>
         </section>
 
         <!-- RESOURCES -->
@@ -72,22 +89,6 @@
             </div>
         </section>
 
-        <!-- UPDATES -->
-        <section class="section">
-            <h2 class="section-label">Updates</h2>
-            <div class="updates-grid">
-                <a href="https://www.instagram.com/bawzcomplex" target="_blank" class="update-card link-card">
-                    <div class="update-img-wrap">
-                        <img src="assets/class-cards.png" alt="Latest post">
-                    </div>
-                    <div class="update-body">
-                        <span class="update-tag">Class Card</span>
-                        <p class="update-caption">Introducing the BAWZ COMPLEX CLASS CARD — designed for those ready to stay consistent and level up. →</p>
-                    </div>
-                </a>
-            </div>
-        </section>
-
         <!-- PROMOTIONS -->
         <section class="section">
             <h2 class="section-label">Promotions</h2>
@@ -105,16 +106,22 @@
         <section class="section">
             <h2 class="section-label">Info</h2>
             <div class="card-grid card-grid--row">
-                <a href="https://" target="_blank" class="link-card info-card">
+                <div class="link-card info-card" data-img="assets/HOUSE RULES.png">
                     <span class="card-icon">📋</span>
                     <span class="card-label">House Rules</span>
-                </a>
-                <a href="https://" target="_blank" class="link-card info-card">
+                </div>
+                <div class="link-card info-card" data-img="assets/Studio.png">
                     <span class="card-icon">💸</span>
                     <span class="card-label">Rates</span>
-                </a>
+                </div>
             </div>
         </section>
+
+        <!-- MODAL -->
+        <div id="info-modal" class="modal">
+            <span class="close">&times;</span>
+            <img class="modal-content" id="info-img" src="" alt="Info">
+        </div>
 
         <!-- LOCATION -->
         <section class="section">
@@ -148,17 +155,13 @@
     <div class="toast" id="toast">Link copied!</div>
 
     <script>
+        // ── Share button ──
         const btn = document.getElementById('shareBtn');
         const toast = document.getElementById('toast');
 
         btn.addEventListener('click', async () => {
             const url = window.location.href;
-            const shareData = {
-                title: 'Bawz Complex',
-                text: 'The home where communities grow and cultures connect.',
-                url
-            };
-
+            const shareData = { title: 'Bawz Complex', text: 'The home where communities grow and cultures connect.', url };
             if (navigator.share) {
                 try { await navigator.share(shareData); } catch (_) {}
             } else {
@@ -168,8 +171,7 @@
                 } catch (_) {
                     const ta = document.createElement('textarea');
                     ta.value = url;
-                    ta.style.position = 'fixed';
-                    ta.style.opacity = '0';
+                    ta.style.cssText = 'position:fixed;opacity:0';
                     document.body.appendChild(ta);
                     ta.select();
                     document.execCommand('copy');
@@ -183,6 +185,38 @@
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2200);
         }
+
+        // ── Info modal ──
+        const modal    = document.getElementById('info-modal');
+        const modalImg = document.getElementById('info-img');
+        const closeBtn = document.querySelector('.close');
+
+        function openModal(src) {
+            modalImg.src = src;
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden'; // prevent background scroll
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('.info-card').forEach(card => {
+            card.addEventListener('click', () => openModal(card.dataset.img));
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+
+        // Click backdrop to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Esc key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
 
 </body>

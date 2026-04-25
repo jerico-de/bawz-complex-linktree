@@ -6,10 +6,11 @@
     --purple-light:   #c084fc;
     --purple-glow:    #a855f7;
     --white:          #ffffff;
-    --white-dim:      rgba(255,255,255,0.05);
+    --white-dim:      rgba(255, 255, 255, 0.123);
     --white-border:   rgba(255,255,255,0.10);
     --white-text:     rgba(255,255,255,0.55);
-    --font:           'Barlow Condensed', sans-serif;
+    --font:           'Special Gothic Expanded One', sans-serif;
+    --font-body:     'Inter', sans-serif;
     --card-gap:       14px;
 }
 
@@ -75,15 +76,29 @@ main {
     text-align: center;
 }
 
-.logo-wrap { display: flex; justify-content: center; }
+.logo-wrap { display: flex; justify-content: center; width: 100%; }
+
+.logo-img {
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo-img:hover {
+    transform: scale(1.02);
+    filter: drop-shadow(0 0 10px rgba(168,85,247,0.7));
+}
 
 .tagline {
-    font-size: clamp(12px, 3.5vw, 15px);
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-size: clamp(9px, 2.6vw, 12px);
+    font-weight: 400;
+    letter-spacing: clamp(0.02em, 0.8vw, 0.06em);
     color: var(--white-text);
     line-height: 1.75;
-    max-width: 300px;
+    max-width: 400px;
     text-transform: uppercase;
 }
 
@@ -94,12 +109,13 @@ main {
     gap: 8px;
     padding: 10px 22px;
     border: 1px solid var(--white-border);
+    border-radius: 6px;
     background: var(--white-dim);
     color: var(--white-text);
     font-family: var(--font);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.22em;
+    font-weight: 400;
+    font-size: clamp(10px, 2.4vw, 12px);
+    letter-spacing: clamp(0.08em, 0.8vw, 0.22em);
     text-transform: uppercase;
     cursor: pointer;
     position: relative;
@@ -119,9 +135,7 @@ main {
 }
 
 .share-btn:hover::before,
-.share-btn:focus-visible::before {
-    transform: scaleX(1);
-}
+.share-btn:focus-visible::before { transform: scaleX(1); }
 
 .share-btn:hover,
 .share-btn:focus-visible {
@@ -130,15 +144,9 @@ main {
 }
 
 .share-btn svg,
-.share-btn span {
-    position: relative;
-    z-index: 1;
-}
+.share-btn span { position: relative; z-index: 1; }
 
-.share-btn svg {
-    width: 15px;
-    height: 15px;
-}
+.share-btn svg { width: 15px; height: 15px; }
 
 /* ===== TOAST ===== */
 .toast {
@@ -149,7 +157,7 @@ main {
     background: var(--purple-glow);
     color: var(--white);
     font-family: var(--font);
-    font-weight: 700;
+    font-weight: 400;
     font-size: 12px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -210,9 +218,9 @@ main {
 }
 
 .social-btn span {
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 0.14em;
+    font-weight: 400;
+    font-size: 8px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
@@ -224,15 +232,15 @@ main {
 }
 
 .section-label {
-    font-weight: 900;
-    font-size: 11px;
-    letter-spacing: 0.38em;
+    font-weight: 400;
+    font-size: clamp(9px, 2.4vw, 12px);
+    letter-spacing: clamp(0.12em, 1.5vw, 0.38em);
     text-transform: uppercase;
     color: var(--purple-glow);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 10px;
 }
 
 .section-label::before,
@@ -313,22 +321,29 @@ main {
     justify-content: center;
     gap: 6px;
     flex: 1;
+    min-width: 0;
+}
+
+.update-caption {
+    font-family: var(--font-body);
+    font-weight: 300;
 }
 
 .update-tag {
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.24em;
+    font-weight: 400;
+    font-size: clamp(10px, 2.8vw, 14px);
+    letter-spacing: clamp(0.08em, 1vw, 0.24em);
     text-transform: uppercase;
     color: var(--purple-light);
 }
 
 .update-caption {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: clamp(11px, 2.8vw, 13px);
+    font-weight: 400;
     color: var(--white);
     line-height: 1.4;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
+    overflow-wrap: break-word;
 }
 
 /* ===== CARD GRIDS ===== */
@@ -355,7 +370,7 @@ main {
 }
 
 .card-grid--row .card-label {
-    font-size: 16px;
+    font-size: clamp(10px, 3vw, 16px);
     flex: unset;
 }
 
@@ -367,6 +382,7 @@ main {
     padding: 22px 24px;
     min-height: 70px;
     border: 1px solid var(--white-border);
+    border-radius: 6px;
     background: var(--white-dim);
     cursor: pointer;
     position: relative;
@@ -374,13 +390,12 @@ main {
     transition: border-color 0.3s, box-shadow 0.3s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Tracing line — grows top to bottom down the left edge */
 .link-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 3px;
+    width: 6px;
     height: 0%;
     background: var(--purple-glow);
     transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -389,9 +404,7 @@ main {
 }
 
 .link-card:hover::before,
-.link-card:focus-visible::before {
-    height: 100%;
-}
+.link-card:focus-visible::before { height: 100%; }
 
 .link-card:hover,
 .link-card:focus-visible {
@@ -403,10 +416,7 @@ main {
 .card-icon,
 .card-label,
 .promo-badge,
-.card-arrow {
-    position: relative;
-    z-index: 2;
-}
+.card-arrow { position: relative; z-index: 2; }
 
 .card-icon {
     font-size: 22px;
@@ -416,12 +426,14 @@ main {
 }
 
 .card-label {
-    font-weight: 700;
-    font-size: clamp(15px, 4vw, 18px);
-    letter-spacing: 0.1em;
+    font-weight: 400;
+    font-size: clamp(10px, 2.8vw, 14px);
+    letter-spacing: clamp(0.04em, 0.6vw, 0.1em);
     text-transform: uppercase;
     flex: 1;
     color: var(--white);
+    min-width: 0;
+    overflow-wrap: break-word;
 }
 
 .card-arrow {
@@ -439,6 +451,48 @@ main {
     transform: translateX(0);
 }
 
+/* ===== MODAL ===== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  inset: 0;
+  background-color: rgba(0,0,0,0.9);
+  align-items: center;
+  padding: 20px;
+  justify-content: center;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-content {
+  display: block;
+  max-width: 90vw;
+  max-height: 85vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.close {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  font-size: 36px;
+  line-height: 1;
+  color: white;
+  cursor: pointer;
+  z-index: 1000;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.close:hover { opacity: 1; }
+
+
 /* ===== PROMO CARD ===== */
 .promo-card {
     border-color: rgba(168,85,247,0.35);
@@ -446,14 +500,15 @@ main {
 }
 
 .promo-badge {
-    font-weight: 900;
-    font-size: 10px;
-    letter-spacing: 0.22em;
+    font-weight: 400;
+    font-size: clamp(9px, 2vw, 10px);
+    letter-spacing: clamp(0.08em, 0.8vw, 0.22em);
     text-transform: uppercase;
     background: var(--purple-glow);
     color: var(--white);
     padding: 3px 10px;
     flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* ===== LOCATION CARD ===== */
@@ -461,7 +516,7 @@ main {
     flex-direction: row;
     align-items: flex-start;
     gap: 14px;
-    padding: 20px 24px;
+    padding: 30px 24px;
     min-height: unset;
     background: rgba(4, 2, 10, 0.85);
     border-color: rgba(255,255,255,0.07);
@@ -481,27 +536,33 @@ main {
     flex: 1;
     position: relative;
     z-index: 2;
-}
-
-.location-label {
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--white);
-    flex: unset;
-    font-size: clamp(12px, 3.5vw, 14px);
+    min-width: 0;
 }
 
 .location-address {
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    font-family: var(--font-body);
+    font-weight: 300;
+}
+
+.location-label {
+    font-weight: 400;
+    font-size: clamp(11px, 2.8vw, 14px);
+    letter-spacing: clamp(0.06em, 0.8vw, 0.2em);
+    text-transform: uppercase;
+    color: var(--white);
+    flex: unset;
+}
+
+.location-address {
+    font-size: clamp(12px, 2.8vw, 14px);
+    font-weight: 400;
+    letter-spacing: 0.03em;
     color: var(--white-text);
     line-height: 1.65;
     text-transform: none;
     position: relative;
     z-index: 2;
+    overflow-wrap: break-word;
 }
 
 /* ===== FOOTER ===== */
@@ -515,10 +576,11 @@ footer {
 }
 
 footer p {
-    font-size: 11px;
-    letter-spacing: 0.22em;
+    font-size: clamp(9px, 2.2vw, 11px);
+    letter-spacing: clamp(0.08em, 1vw, 0.22em);
     text-transform: uppercase;
     color: rgba(255,255,255,0.2);
+    text-align: center;
 }
 
 /* ===== ENTRANCE ANIMATIONS ===== */
@@ -534,70 +596,139 @@ footer p {
 .section:nth-child(5) { animation: fadeUp 0.6s ease both 0.38s; }
 .section:nth-child(6) { animation: fadeUp 0.6s ease both 0.44s; }
 .section:nth-child(7) { animation: fadeUp 0.6s ease both 0.50s; }
+.section:nth-child(8) { animation: fadeUp 0.6s ease both 0.56s; }
 footer                { animation: fadeUp 0.6s ease both 0.56s; }
 
-/* ===== MOBILE — ≤ 480px ===== */
+/* ===== MOBILE ≤ 480px ===== */
 @media (max-width: 480px) {
     main {
-        padding: 40px 14px 72px;
+        padding: 36px 14px 80px;
         gap: 40px;
     }
 
-    :root { --card-gap: 12px; }
+    :root { --card-gap: 10px; }
 
-    .logo-box { padding: 14px 28px 10px; border-width: 2px; }
+    .logo-img {
+        max-width: 100%;
+        width: calc(100vw - 48px);
+    }
 
-    .socials { gap: 10px; }
-    .social-btn { width: clamp(56px, 22vw, 68px); min-height: 60px; }
+    /* Tagline: tighten tracking significantly */
+    .tagline {
+        font-size: 11px;
+        letter-spacing: 0.02em;
+        max-width: 300px;
+    }
+
+    /* Section labels: the biggest offender at mobile */
+    .section-label {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        gap: 8px;
+    }
+
+    /* Socials */
+    .socials { gap: 1px; }
+    .social-btn {
+        width: clamp(54px, 21vw, 68px);
+        min-height: 58px;
+        gap: 6px;
+    }
     .social-btn svg { width: 44px; height: 44px; padding: 10px; }
+    .social-btn span { display:none; }
 
-    .share-btn { width: 100%; justify-content: center; padding: 13px 20px; }
+    /* Update card */
+    .update-img-wrap { width: 78px; }
+    .update-body { padding: 12px 12px; }
+    .update-tag { font-size: 10px; letter-spacing: 0.08em; }
+    .update-caption { font-size: 11px; }
 
-    .update-img-wrap { width: 84px; }
-    .update-body { padding: 14px 14px; }
-    .update-caption { font-size: 14px; }
+    /* Link cards */
+    .link-card { padding: 16px 14px; min-height: 58px; gap: 10px; }
+    .card-icon { font-size: 18px; width: 22px; }
+    .card-label { font-size: 12px; letter-spacing: 0.04em; }
+    .card-arrow { display: none; }
 
-    .card-grid--row .link-card { padding: 22px 10px; min-height: 84px; }
-    .card-grid--row .card-icon { font-size: 18px; }
+    /* Row grid */
+    .card-grid--row .link-card { padding: 18px 10px; min-height: 80px; }
+    .card-grid--row .card-icon { font-size: 17px; }
+    .card-grid--row .card-label { font-size: 12px; letter-spacing: 0.03em; }
 
-    .link-card { padding: 18px 18px; min-height: 64px; }
-    .card-icon { font-size: 20px; width: 26px; }
+    /* Share button */
+    .share-btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+    }
 
-    .location-card { padding: 16px 18px; }
+    /* Location card */
+    .location-card { padding: 16px 14px; gap: 10px; }
+    .location-label { font-size: 11px; letter-spacing: 0.06em; }
+    .location-address { font-size: 12px; }
+
+    /* Promo badge */
+    .promo-badge { font-size: 9px; letter-spacing: 0.08em; padding: 3px 8px; }
+
+    /* Footer */
+    footer p { font-size: 9px; letter-spacing: 0.08em; }
 }
 
-/* Very small phones ≤ 360px: stack info row */
+/* ===== VERY SMALL ≤ 360px ===== */
 @media (max-width: 360px) {
+    .logo-img { width: calc(100vw - 40px); }
+
+    .tagline { font-size: 9px; letter-spacing: 0.01em; }
+
+    .section-label { font-size: 8px; letter-spacing: 0.1em; }
+
+    .card-label { font-size: 10px; letter-spacing: 0.02em; }
+
+    /* Stack row grid vertically */
     .card-grid--row { flex-direction: column; }
     .card-grid--row .link-card {
         flex-direction: row;
         text-align: left;
-        min-height: 60px;
-        padding: 16px 16px;
+        min-height: 52px;
+        padding: 12px 14px;
+        gap: 10px;
     }
-    .card-grid--row .card-label { flex: 1; font-size: 15px; }
+    .card-grid--row .card-label { flex: 1; font-size: 10px; }
+    .card-grid--row .card-icon { font-size: 17px; }
 }
 
-/* Touch devices — :active feedback instead of :hover */
+/* ===== TOUCH DEVICES ===== */
 @media (hover: none) and (pointer: coarse) {
-    .social-btn:hover  { transform: none; }
+    .link-card:hover,
+    .update-card:hover { transform: none; }
 
-    .social-btn:active svg {
-        background: var(--purple-glow);
+    .link-card:active {
         border-color: var(--purple-glow);
-        box-shadow: 0 0 20px rgba(168,85,247,0.5);
+        box-shadow: 0 0 0 1px var(--purple-glow), 0 4px 18px rgba(168,85,247,0.2);
+        transform: none;
+    }
+
+    .link-card:active::before {
+        width: var(--bar-w-hover);
+        opacity: 1;
     }
 
     .update-card:active {
         border-color: var(--purple-glow);
-        box-shadow: 0 0 0 1px rgba(168,85,247,0.3);
-    }
-    .update-card:active .update-img-wrap img { transform: scale(1.06); }
-
-    .link-card:active {
-        border-color: rgba(168,85,247,0.5);
-        background: rgba(168,85,247,0.09);
+        box-shadow: 0 0 0 1px var(--purple-glow);
         transform: none;
+    }
+
+    .update-card:active::before {
+        width: var(--bar-w-hover);
+        opacity: 1;
+    }
+
+    .social-btn:hover { transform: none; }
+    .social-btn:active svg {
+        background: var(--purple-glow);
+        border-color: var(--purple-glow);
+        box-shadow: 0 0 20px rgba(168,85,247,0.5);
     }
 
     .share-btn:active::before { transform: scaleX(1); }
