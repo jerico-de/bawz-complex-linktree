@@ -698,37 +698,23 @@ footer                { animation: fadeUp 0.6s ease both 0.56s; }
 
 /* ===== TOUCH DEVICES ===== */
 @media (hover: none) and (pointer: coarse) {
-    .link-card:hover,
-
+    .link-card:hover { transform: none; border-color: var(--white-border); box-shadow: none; }
+    .link-card:hover::before { height: 0%; }
+ 
     .link-card:active {
-        border-color: var(--purple-glow);
-        box-shadow: 0 0 0 1px var(--purple-glow), 0 4px 18px rgba(168,85,247,0.2);
-        transform: none;
+        transform: translateX(3px);
+        border-color: rgba(169, 85, 247, 0.514);
+        box-shadow: 0 0 18px rgba(169, 85, 247, 0.418);
     }
-
-    .link-card:active::before {
-        width: var(--bar-w-hover);
-        opacity: 1;
-    }
-
-    .update-card:active {
-        border-color: var(--purple-glow);
-        box-shadow: 0 0 0 1px var(--purple-glow);
-        transform: none;
-    }
-
-    .update-card:active::before {
-        width: var(--bar-w-hover);
-        opacity: 1;
-    }
-
+    .link-card:active::before { height: 0%; }
+ 
     .social-btn:hover { transform: none; }
     .social-btn:active svg {
         background: var(--purple-glow);
         border-color: var(--purple-glow);
         box-shadow: 0 0 20px rgba(168,85,247,0.5);
     }
-
+ 
     .share-btn:active::before { transform: scaleX(1); }
     .share-btn:active { color: var(--white); }
 }
