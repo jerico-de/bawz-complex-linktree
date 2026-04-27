@@ -146,6 +146,77 @@
     <div class="toast" id="toast">Link copied!</div>
 
     <script>
+        // - Logo
+        const logo = document.querySelector('.logo-img');
+
+        let clickCount = 0;
+        let hoverTime = 0;
+        let hoverInterval;
+        let activated = false;
+
+        function toggleChaos() {
+            activated = !activated;
+
+            if (activated) {
+                // Start chaos
+                logo.classList.add('crazy');
+
+                // Add text
+                const text = document.createElement('div');
+                text.className = 'crazy-text';
+                text.id = 'crazyText';
+                text.innerHTML = 'BAWZ NUMBER ONE! <br>WE LOVE YOU KUYA AE!';
+                document.body.appendChild(text);
+
+                // Confetti burst
+                for (let i = 0; i < 200; i++) {
+                    const conf = document.createElement('div');
+                    conf.className = 'confetti';
+
+                    conf.style.left = Math.random() * 100 + 'vw';
+                    conf.style.background = `hsl(${Math.random()*360}, 100%, 50%)`;
+                    conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
+                    document.body.appendChild(conf);
+                    setTimeout(() => conf.remove(), 5000);
+                }
+
+            } else {
+                // Stop chaos
+                logo.classList.remove('crazy');
+
+                const text = document.getElementById('crazyText');
+                if (text) text.remove();
+            }
+        }
+
+        // Click trigger
+        logo.addEventListener('click', () => {
+            clickCount++;
+
+            if (!activated && clickCount >= 5) {
+                toggleChaos();
+            } else if (activated) {
+                toggleChaos();
+            }
+        });
+
+        // Hover trigger
+        logo.addEventListener('mouseenter', () => {
+            hoverInterval = setInterval(() => {
+                hoverTime++;
+                if (!activated && hoverTime >= 5) {
+                    toggleChaos();
+                    clearInterval(hoverInterval);
+                }
+            }, 1000);
+        });
+
+        logo.addEventListener('mouseleave', () => {
+            clearInterval(hoverInterval);
+            hoverTime = 0;
+        });
+
         // ── Share button ──
         const btn = document.getElementById('shareBtn');
         const toast = document.getElementById('toast');
