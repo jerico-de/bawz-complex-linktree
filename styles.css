@@ -127,7 +127,7 @@ main {
     text-align: center;
     animation: jumpText 0.6s ease infinite alternate;
     z-index: 9999;
-    text-shadow: 0 0 10px #a955f711, 0 0 20px #a955f7a6, 0 0 30px #a955f79c;
+    text-shadow: 0 0 10px #5c2a8b62, 0 0 20px #4a256d70, 0 0 30px #3a1c579c;
 }
 
 @keyframes jumpText {
@@ -140,7 +140,7 @@ main {
     margin: 12px auto 0;
     width: 80px;
     animation: bounce 0.6s ease infinite alternate;
-    box-shadow: 0 0 10px #a955f71c, 0 0 20px #a855f7a6, 0 0 30px #a955f736;
+    box-shadow: 0 0 10px #5c2a8b62, 0 0 20px #4a256d70, 0 0 30px #3a1c579c;
 }
 
 @keyframes bounce {
