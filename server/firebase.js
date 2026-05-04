@@ -1,7 +1,3 @@
-// server/firebase.js
-// Initializes Firebase Admin SDK using environment variables.
-// No service account JSON file needed — credentials come from .env
-
 const admin = require('firebase-admin');
 require('dotenv').config();
 

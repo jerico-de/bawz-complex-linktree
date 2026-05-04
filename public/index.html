@@ -14,11 +14,11 @@
     <div class="grid-bg"></div>
 
     <main>
-        <!-- Content injected by JS from /api/config -->
+        <!-- Content injected -->
         <div id="site-root" style="display:contents"></div>
     </main>
 
-    <!-- Modal (always present) -->
+    <!-- Modal -->
     <div id="info-modal" class="modal">
         <span class="close">&times;</span>
         <img class="modal-content" id="info-img" src="" alt="Info">
@@ -279,7 +279,7 @@
     // ══════════════════════════════════════════════════════
     (async () => {
       try {
-        const res = await fetch('/api/config');
+        const res = await fetch('https://bawz-complex-linktree-admin.onrender.com/api/config');
         const json = await res.json();
         buildSite(json.data);
       } catch (e) {

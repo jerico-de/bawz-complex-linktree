@@ -1,4 +1,3 @@
-// server/index.js
 require('dotenv').config();
 
 const express      = require('express');
@@ -12,7 +11,10 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ─── Middleware ──────────────────────────────────────────────────
-app.use(cors());
+app.use(cors({origin: [
+    'https://bawz-complex.vercel.app',
+    'https://bawz-complex-linktree-admin.onrender.com',
+    'http://localhost:3000',]}));
 app.use(express.json());
 
 // ─── Serve the main site's public files ─────────────────────────

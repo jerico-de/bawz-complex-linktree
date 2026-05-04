@@ -1,7 +1,3 @@
-// server/defaultData.js
-// This is the initial data that gets seeded into Firestore on first run.
-// It mirrors exactly what's currently hardcoded in your index.html.
-
 const DEFAULT_CONFIG = {
   tagline: "Welcome to Bawz Complex!\nThe home where communities grow and cultures connect.",
 
