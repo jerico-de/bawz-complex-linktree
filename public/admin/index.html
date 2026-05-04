@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bawz Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #080510;
+      --surface:   #120d22;
+      --surface2:  #1c1435;
+      --border:    rgba(168,85,247,0.18);
+      --border2:   rgba(255,255,255,0.08);
+      --purple:    #a855f7;
+      --purple-d:  #7c3aed;
+      --purple-l:  #c084fc;
+      --white:     #fff;
+      --dim:       rgba(255,255,255,0.5);
+      --danger:    #ef4444;
+      --success:   #22c55e;
+      --radius:    8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple-l); }
+    .topbar-badge { font-size: 10px; background: var(--purple-d); color: #fff; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; }
+    .site-link { font-size: 12px; color: var(--dim); text-decoration: none; border: 1px solid var(--border2); padding: 5px 12px; border-radius: 5px; transition: color 0.2s, border-color 0.2s; }
+    .site-link:hover { color: var(--white); border-color: var(--purple); }
+
+    /* ── Layout ── */
+    .layout { display: flex; flex: 1; }
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: sticky;
+      top: 53px;
+      height: calc(100vh - 53px);
+      overflow-y: auto;
+    }
+    .sidebar nav a {
+      display: block;
+      padding: 10px 24px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--dim);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .sidebar nav a:hover { color: var(--white); background: rgba(168,85,247,0.07); }
+    .sidebar nav a.active { color: var(--purple-l); border-left-color: var(--purple); background: rgba(168,85,247,0.09); }
+    .sidebar-section { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 16px 24px 6px; }
+
+    .content { flex: 1; padding: 36px; max-width: 860px; }
+
+    /* ── Section headers ── */
+    .page-section { margin-bottom: 48px; }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .section-header h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple-l); }
+    .section-header p { font-size: 12px; color: var(--dim); }
+
+    /* ── Cards ── */
+    .card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .card-title { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+
+    /* ── Drag list ── */
+    .drag-list { display: flex; flex-direction: column; gap: 8px; }
+    .drag-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: grab;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .drag-item:active { cursor: grabbing; }
+    .drag-item.dragging { opacity: 0.4; }
+    .drag-item.drag-over { border-color: var(--purple); box-shadow: 0 0 0 2px rgba(168,85,247,0.25); }
+    .drag-handle { color: rgba(255,255,255,0.2); font-size: 16px; flex-shrink: 0; margin-top: 2px; cursor: grab; }
+    .drag-handle:hover { color: var(--purple); }
+    .drag-item-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .drag-item-top { display: flex; align-items: center; gap: 10px; }
+    .drag-item-icon { font-size: 18px; flex-shrink: 0; }
+    .drag-item-name { font-size: 13px; font-weight: 500; flex: 1; }
+    .drag-item-meta { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+    .drag-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ── Form fields ── */
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      padding: 9px 12px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--purple); }
+    .field textarea { resize: vertical; min-height: 70px; }
+    .field-row { display: flex; gap: 12px; }
+    .field-row .field { flex: 1; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--purple); color: #fff; }
+    .btn-ghost   { background: transparent; color: var(--dim); border: 1px solid var(--border2); }
+    .btn-ghost:hover { color: var(--white); border-color: var(--border); }
+    .btn-danger  { background: transparent; color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+    .btn-danger:hover { background: rgba(239,68,68,0.1); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-sm      { padding: 5px 10px; font-size: 11px; }
+    .btn-icon    { padding: 6px 8px; }
+
+    /* ── Inline edit form ── */
+    .inline-form {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 10px;
+      display: none;
+    }
+    .inline-form.open { display: block; }
+    .inline-form-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 9999;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.ok   { border-color: var(--success); color: var(--success); }
+    #toast.err  { border-color: var(--danger);  color: var(--danger); }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-title { font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple-l); margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border2); margin-bottom: 20px; }
+    .tab { padding: 9px 18px; font-size: 12px; font-weight: 500; color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; }
+    .tab:hover { color: var(--white); }
+    .tab.active { color: var(--purple-l); border-bottom-color: var(--purple); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Save bar ── */
+    .save-bar {
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(transparent, var(--bg) 30%);
+      padding: 20px 0 0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .save-status { font-size: 12px; color: var(--dim); }
+    .save-status.saving { color: var(--purple-l); }
+    .save-status.saved  { color: var(--success); }
+
+    /* ── Section order badge ── */
+    .order-badge { background: rgba(168,85,247,0.15); color: var(--purple-l); font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .content { padding: 20px; }
+      .field-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <h1>Bawz Admin</h1>
+    <span class="topbar-badge">CMS</span>
+  </div>
+  <a class="site-link" href="/" target="_blank">↗ View Site</a>
+</header>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">Content</div>
+    <nav>
+      <a href="#tagline"   class="active">Tagline</a>
+      <a href="#socials"  >Socials</a>
+      <a href="#sections" >Sections & Cards</a>
+    </nav>
+    <div class="sidebar-section">Settings</div>
+    <nav>
+      <a href="#crazymode">Crazy Mode</a>
+      <a href="#danger"   >Danger Zone</a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="content">
+
+    <!-- ── Tagline ── -->
+    <section class="page-section" id="tagline">
+      <div class="section-header">
+        <div>
+          <h2>Tagline</h2>
+          <p>The text shown under the logo on the home page</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label>Tagline Text</label>
+          <textarea id="tagline-input" rows="3" placeholder="Loading..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveTagline()">Save Tagline</button>
+      </div>
+    </section>
+
+    <!-- ── Socials ── -->
+    <section class="page-section" id="socials">
+      <div class="section-header">
+        <div>
+          <h2>Socials</h2>
+          <p>Drag to reorder · click Edit to change URL or label</p>
+        </div>
+      </div>
+      <div class="drag-list" id="socials-list"></div>
+      <div class="save-bar">
+        <button class="btn btn-primary" onclick="saveSocials()">Save Order & Changes</button>
+        <span class="save-status" id="socials-status"></span>
+      </div>
+    </section>
+
+    <!-- ── Sections & Cards ── -->
+    <section class="page-section" id="sections">
+      <div class="section-header">
+        <div>
+          <h2>Sections & Cards</h2>
+          <p>Drag sections to reorder · expand each to reorder and edit cards</p>
+        </div>
+      </div>
+      <div class="drag-list" id="sections-list"></div>
+      <div class="save-bar">
+        <button class="btn btn-primary" onclick="saveSections()">Save All Section Changes</button>
+        <span class="save-status" id="sections-status"></span>
+      </div>
+    </section>
+
+    <!-- ── Crazy Mode ── -->
+    <section class="page-section" id="crazymode">
+      <div class="section-header">
+        <div>
+          <h2>Crazy Mode</h2>
+          <p>The easter egg triggered by clicking / hovering the logo</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label>Message Text</label>
+          <input type="text" id="crazy-message" placeholder="GOODLUCK JRSEA!">
+        </div>
+        <div class="field">
+          <label>Image Path (relative to your assets folder)</label>
+          <input type="text" id="crazy-image" placeholder="assets/jrsea.jpg">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Click Threshold</label>
+            <input type="number" id="crazy-clicks" min="1" max="20" placeholder="5">
+          </div>
+          <div class="field">
+            <label>Hover Threshold (seconds)</label>
+            <input type="number" id="crazy-hover" min="1" max="30" placeholder="5">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveCrazyMode()">Save Crazy Mode</button>
+      </div>
+    </section>
+
+    <!-- ── Danger Zone ── -->
+    <section class="page-section" id="danger">
+      <div class="section-header">
+        <div>
+          <h2>Danger Zone</h2>
+          <p>Irreversible actions — be careful</p>
+        </div>
+      </div>
+      <div class="card" style="border-color: rgba(239,68,68,0.25)">
+        <div class="card-header">
+          <div>
+            <div class="card-title" style="color: var(--danger)">Reset to Defaults</div>
+            <p style="font-size:12px;color:var(--dim);margin-top:4px">Wipes all changes and reloads the original hardcoded data.</p>
+          </div>
+          <button class="btn btn-danger" onclick="seedDefaults()">Reset</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Edit Modal ── -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Edit Card</div>
+    <div id="modal-fields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════════
+let config   = null;   // full config from server
+let modalCtx = null;   // { type, sectionId?, cardId?, resolve }
+
+// ════════════════════════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════════════════════════
+function toast(msg, ok = true) {
+  const t = document.getElementById('toast');
+  t.textContent = (ok ? '✓ ' : '✗ ') + msg;
+  t.className = 'show ' + (ok ? 'ok' : 'err');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = '', 3000);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  API HELPERS
+// ════════════════════════════════════════════════════════════════
+async function api(method, path, body) {
+  const res = await fetch('/api/admin' + path, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Unknown error');
+  return json.data;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  INIT — load config and render everything
+// ════════════════════════════════════════════════════════════════
+async function init() {
+  try {
+    const res = await fetch('/api/config');
+    const json = await res.json();
+    config = json.data;
+    renderAll();
+  } catch (e) {
+    toast('Failed to load config: ' + e.message, false);
+  }
+}
+
+function renderAll() {
+  renderTagline();
+  renderSocials();
+  renderSections();
+  renderCrazyMode();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  TAGLINE
+// ════════════════════════════════════════════════════════════════
+function renderTagline() {
+  document.getElementById('tagline-input').value = config.tagline || '';
+}
+
+async function saveTagline() {
+  const tagline = document.getElementById('tagline-input').value;
+  try {
+    await api('PATCH', '/tagline', { tagline });
+    config.tagline = tagline;
+    toast('Tagline saved!');
+  } catch (e) { toast(e.message, false); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SOCIALS
+// ════════════════════════════════════════════════════════════════
+function renderSocials() {
+  const list = document.getElementById('socials-list');
+  list.innerHTML = '';
+  const sorted = [...(config.socials || [])].sort((a,b) => a.order - b.order);
+  sorted.forEach((s, i) => {
+    const item = makeDragItem({
+      id:      s.id,
+      icon:    socialIcon(s.icon),
+      name:    s.label,
+      meta:    s.href,
+      onEdit:  () => openSocialModal(s.id),
+    });
+    list.appendChild(item);
+  });
+  makeDraggable(list, 'social');
+}
+
+function socialIcon(id) {
+  const icons = { instagram:'📸', facebook:'📘', tiktok:'🎵', email:'📧' };
+  return icons[id] || '🔗';
+}
+
+function openSocialModal(id) {
+  const s = config.socials.find(s => s.id === id);
+  modalCtx = { type: 'social', id };
+  document.getElementById('modal-title').textContent = 'Edit Social — ' + s.label;
+  document.getElementById('modal-fields').innerHTML = `
+    <div class="field"><label>Label</label><input id="mf-label" value="${esc(s.label)}"></div>
+    <div class="field"><label>URL / href</label><input id="mf-href" value="${esc(s.href)}"></div>
+  `;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+async function saveSocials() {
+  const list   = document.getElementById('socials-list');
+  const items  = [...list.querySelectorAll('.drag-item')];
+  const sorted = items.map((el, i) => {
+    const s = config.socials.find(s => s.id === el.dataset.id);
+    return { ...s, order: i };
+  });
+  try {
+    await api('PUT', '/socials', { socials: sorted });
+    config.socials = sorted;
+    toast('Socials saved!');
+    setStatus('socials-status', 'saved');
+  } catch (e) { toast(e.message, false); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SECTIONS
+// ════════════════════════════════════════════════════════════════
+function renderSections() {
+  const list = document.getElementById('sections-list');
+  list.innerHTML = '';
+  const sorted = [...(config.sections || [])].sort((a,b) => a.order - b.order);
+
+  sorted.forEach((sec, si) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'drag-item';
+    wrap.dataset.id = sec.id;
+    wrap.setAttribute('draggable', 'true');
+    wrap.style.flexDirection = 'column';
+
+    // Section header row
+    const top = document.createElement('div');
+    top.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%';
+    top.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <span class="drag-item-icon">📂</span>
+      <span class="drag-item-name" style="flex:1">${esc(sec.label)}</span>
+      <span class="order-badge">${sec.type}</span>
+      <button class="btn btn-ghost btn-sm" onclick="toggleCards('${sec.id}')">Cards ▾</button>
+      <button class="btn btn-ghost btn-sm" onclick="openSectionModal('${sec.id}')">Edit</button>
+    `;
+    wrap.appendChild(top);
+
+    // Cards panel (collapsed by default)
+    const cardsPanel = document.createElement('div');
+    cardsPanel.id = `cards-panel-${sec.id}`;
+    cardsPanel.style.cssText = 'display:none;width:100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--border2)';
+    cardsPanel.innerHTML = renderCardsHTML(sec);
+    wrap.appendChild(cardsPanel);
+
+    list.appendChild(wrap);
+  });
+
+  makeDraggable(list, 'section');
+}
+
+function toggleCards(secId) {
+  const panel = document.getElementById(`cards-panel-${secId}`);
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  // Bind drag for cards inside panel
+  const inner = panel.querySelector('.drag-list');
+  if (inner) makeDraggable(inner, 'card', secId);
+}
+
+function renderCardsHTML(sec) {
+  const sorted = [...(sec.cards || [])].sort((a,b) => a.order - b.order);
+  if (!sorted.length) return '<p style="font-size:12px;color:var(--dim);padding:4px 0">No cards in this section.</p>';
+
+  const items = sorted.map(c => `
+    <div class="drag-item" data-id="${c.id}" draggable="true" style="cursor:grab">
+      <span class="drag-handle">⠿</span>
+      <div class="drag-item-body">
+        <div class="drag-item-top">
+          <span class="drag-item-icon">${c.icon || '🔗'}</span>
+          <span class="drag-item-name">${esc(c.label)}</span>
+          ${c.cta ? `<span class="order-badge">${esc(c.cta)}</span>` : ''}
+        </div>
+        ${(c.href || c.address) ? `<div class="drag-item-meta">${esc(c.href || c.address)}</div>` : ''}
+      </div>
+      <div class="drag-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openCardModal('${sec.id}','${c.id}')">Edit</button>
+      </div>
+    </div>
+  `).join('');
+
+  return `<div class="drag-list" data-section="${sec.id}">${items}</div>
+  <div style="margin-top:10px;">
+    <button class="btn btn-ghost btn-sm" onclick="saveCards('${sec.id}')">💾 Save Card Order</button>
+  </div>`;
+}
+
+function openSectionModal(secId) {
+  const sec = config.sections.find(s => s.id === secId);
+  modalCtx = { type: 'section', secId };
+  document.getElementById('modal-title').textContent = 'Edit Section';
+  document.getElementById('modal-fields').innerHTML = `
+    <div class="field"><label>Section Label</label><input id="mf-label" value="${esc(sec.label)}"></div>
+  `;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function openCardModal(secId, cardId) {
+  const sec  = config.sections.find(s => s.id === secId);
+  const card = sec.cards.find(c => c.id === cardId);
+  modalCtx = { type: 'card', secId, cardId };
+  document.getElementById('modal-title').textContent = 'Edit Card — ' + card.label;
+
+  let fields = `<div class="field"><label>Label / Title</label><input id="mf-label" value="${esc(card.label)}"></div>`;
+
+  if (sec.type === 'promo') {
+    fields += `
+      <div class="field"><label>Link URL</label><input id="mf-href" value="${esc(card.href||'')}"></div>
+      <div class="field"><label>CTA Button Text</label><input id="mf-cta" value="${esc(card.cta||'')}"></div>
+      <div class="field"><label>Image Path</label><input id="mf-image" value="${esc(card.image||'')}"></div>
+      <div class="field"><label>Image Alt Text</label><input id="mf-alt" value="${esc(card.alt||'')}"></div>
+    `;
+  } else if (sec.type === 'link') {
+    fields += `
+      <div class="field"><label>Icon (emoji)</label><input id="mf-icon" value="${esc(card.icon||'')}"></div>
+      <div class="field"><label>Link URL</label><input id="mf-href" value="${esc(card.href||'')}"></div>
+    `;
+  } else if (sec.type === 'info') {
+    fields += `
+      <div class="field"><label>Icon (emoji)</label><input id="mf-icon" value="${esc(card.icon||'')}"></div>
+      <div class="field"><label>Image Path</label><input id="mf-image" value="${esc(card.image||'')}"></div>
+    `;
+  } else if (sec.type === 'location') {
+    fields += `
+      <div class="field"><label>Icon (emoji)</label><input id="mf-icon" value="${esc(card.icon||'')}"></div>
+      <div class="field"><label>Address</label><textarea id="mf-address">${esc(card.address||'')}</textarea></div>
+      <div class="field"><label>Google Maps URL</label><input id="mf-href" value="${esc(card.href||'')}"></div>
+    `;
+  }
+
+  document.getElementById('modal-fields').innerHTML = fields;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+async function saveModal() {
+  const ctx = modalCtx;
+  if (!ctx) return;
+  try {
+    const val = id => document.getElementById(id)?.value;
+
+    if (ctx.type === 'social') {
+      const idx = config.socials.findIndex(s => s.id === ctx.id);
+      config.socials[idx].label = val('mf-label');
+      config.socials[idx].href  = val('mf-href');
+      renderSocials();
+      toast('Social updated — click "Save Order & Changes" to persist');
+    }
+
+    if (ctx.type === 'section') {
+      const idx = config.sections.findIndex(s => s.id === ctx.secId);
+      config.sections[idx].label = val('mf-label');
+      renderSections();
+      toast('Section updated — click "Save All Section Changes" to persist');
+    }
+
+    if (ctx.type === 'card') {
+      const si = config.sections.findIndex(s => s.id === ctx.secId);
+      const ci = config.sections[si].cards.findIndex(c => c.id === ctx.cardId);
+      const c  = config.sections[si].cards[ci];
+      c.label   = val('mf-label')   ?? c.label;
+      c.href    = val('mf-href')    ?? c.href;
+      c.cta     = val('mf-cta')     ?? c.cta;
+      c.icon    = val('mf-icon')    ?? c.icon;
+      c.image   = val('mf-image')   ?? c.image;
+      c.alt     = val('mf-alt')     ?? c.alt;
+      c.address = val('mf-address') ?? c.address;
+      renderSections();
+      toast('Card updated — click "Save All Section Changes" to persist');
+    }
+
+    closeModal();
+  } catch (e) { toast(e.message, false); }
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  modalCtx = null;
+}
+
+async function saveCards(secId) {
+  const panel = document.getElementById(`cards-panel-${secId}`);
+  const list  = panel.querySelector('.drag-list');
+  if (!list) return;
+  const items  = [...list.querySelectorAll('.drag-item')];
+  const sec    = config.sections.find(s => s.id === secId);
+  const reordered = items.map((el, i) => {
+    const card = sec.cards.find(c => c.id === el.dataset.id);
+    return { ...card, order: i };
+  });
+  try {
+    await api('PUT', `/sections/${secId}/cards`, { cards: reordered });
+    sec.cards = reordered;
+    // Also save everything so it's consistent
+    await api('PUT', '/sections', { sections: config.sections });
+    toast('Cards saved!');
+  } catch (e) { toast(e.message, false); }
+}
+
+async function saveSections() {
+  const list  = document.getElementById('sections-list');
+  const items = [...list.querySelectorAll(':scope > .drag-item')];
+  const reordered = items.map((el, i) => {
+    const sec = config.sections.find(s => s.id === el.dataset.id);
+    return { ...sec, order: i };
+  });
+  try {
+    await api('PUT', '/sections', { sections: reordered });
+    config.sections = reordered;
+    toast('Sections saved!');
+    setStatus('sections-status', 'saved');
+  } catch (e) { toast(e.message, false); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  CRAZY MODE
+// ════════════════════════════════════════════════════════════════
+function renderCrazyMode() {
+  const c = config.crazyMode || {};
+  document.getElementById('crazy-message').value = c.message         || '';
+  document.getElementById('crazy-image').value   = c.imageAsset      || '';
+  document.getElementById('crazy-clicks').value  = c.clickThreshold  || 5;
+  document.getElementById('crazy-hover').value   = c.hoverThresholdSeconds || 5;
+}
+
+async function saveCrazyMode() {
+  const patch = {
+    message:              document.getElementById('crazy-message').value,
+    imageAsset:           document.getElementById('crazy-image').value,
+    clickThreshold:       parseInt(document.getElementById('crazy-clicks').value) || 5,
+    hoverThresholdSeconds:parseInt(document.getElementById('crazy-hover').value)  || 5,
+  };
+  try {
+    await api('PATCH', '/crazymode', patch);
+    config.crazyMode = { ...config.crazyMode, ...patch };
+    toast('Crazy Mode saved!');
+  } catch (e) { toast(e.message, false); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  DANGER ZONE
+// ════════════════════════════════════════════════════════════════
+async function seedDefaults() {
+  if (!confirm('This will RESET everything to the original hardcoded defaults. Are you sure?')) return;
+  try {
+    await api('POST', '/seed');
+    toast('Reset complete — reloading…');
+    setTimeout(() => location.reload(), 1200);
+  } catch (e) { toast(e.message, false); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  DRAG & DROP
+// ════════════════════════════════════════════════════════════════
+function makeDraggable(list, type, secId) {
+  let dragged = null;
+
+  list.querySelectorAll('.drag-item').forEach(item => {
+    // Remove old listeners
+    const clone = item.cloneNode(true);
+    item.parentNode.replaceChild(clone, item);
+  });
+
+  list.querySelectorAll('.drag-item').forEach(item => {
+    item.setAttribute('draggable', 'true');
+
+    item.addEventListener('dragstart', e => {
+      dragged = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      list.querySelectorAll('.drag-item').forEach(i => i.classList.remove('drag-over'));
+      dragged = null;
+    });
+
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (item === dragged) return;
+      list.querySelectorAll('.drag-item').forEach(i => i.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragged || item === dragged) return;
+      const items = [...list.querySelectorAll('.drag-item')];
+      const draggedIdx = items.indexOf(dragged);
+      const targetIdx  = items.indexOf(item);
+      if (draggedIdx < targetIdx) {
+        list.insertBefore(dragged, item.nextSibling);
+      } else {
+        list.insertBefore(dragged, item);
+      }
+      item.classList.remove('drag-over');
+    });
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════════════
+function makeDragItem({ id, icon, name, meta, onEdit }) {
+  const div = document.createElement('div');
+  div.className = 'drag-item';
+  div.dataset.id = id;
+  div.setAttribute('draggable', 'true');
+  div.innerHTML = `
+    <span class="drag-handle">⠿</span>
+    <div class="drag-item-body">
+      <div class="drag-item-top">
+        <span class="drag-item-icon">${icon}</span>
+        <span class="drag-item-name">${esc(name)}</span>
+      </div>
+      ${meta ? `<div class="drag-item-meta">${esc(meta)}</div>` : ''}
+    </div>
+    <div class="drag-item-actions">
+      <button class="btn btn-ghost btn-sm edit-btn">Edit</button>
+    </div>
+  `;
+  div.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); onEdit(); });
+  return div;
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setStatus(id, state) {
+  const el = document.getElementById(id);
+  el.className = 'save-status ' + state;
+  el.textContent = state === 'saved' ? '✓ Saved' : state === 'saving' ? 'Saving…' : '';
+  if (state === 'saved') setTimeout(() => el.textContent = '', 3000);
+}
+
+// Sidebar active link on scroll
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('.sidebar nav a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.page-section').forEach(s => observer.observe(s));
+
+// Close modal on backdrop click
+document.getElementById('edit-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ── Boot ──
+init();
+</script>
+</body>
+</html>

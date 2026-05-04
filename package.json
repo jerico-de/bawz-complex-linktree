@@ -1,0 +1,32 @@
+{
+  "name": "bawz-link-tree",
+  "version": "1.0.0",
+  "description": "Bawz Complex link tree with admin backend",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jerico-de/bawz-complex-linktree.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jerico-de/bawz-complex-linktree/issues"
+  },
+  "homepage": "https://github.com/jerico-de/bawz-complex-linktree#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "express-basic-auth": "^1.2.1",
+    "firebase-admin": "^12.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
