@@ -238,7 +238,7 @@ app.use((req, res) => res.status(404).json({ ok: false, error: 'Not found' }));
 // ─── Start ───────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n🎵 Bawz Complex Admin Server`);
-  console.log(`   Site:  http://localhost:${PORT}`);
-  console.log(`   Admin: http://localhost:${PORT}/admin`);
-  console.log(`   API:   http://localhost:${PORT}/api/config\n`);
+  console.log(`   Site:  https://bawz-complex.vercel.app/`);
+  console.log(`   Admin: https://bawz-complex-linktree-admin.onrender.com//admin`);
+  console.log(`   API:   https://bawz-complex-linktree-admin.onrender.com//api/config\n`);
 });
