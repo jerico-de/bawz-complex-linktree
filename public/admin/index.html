@@ -138,6 +138,80 @@
     .field-row { display: flex; gap: 12px; }
     .field-row .field { flex: 1; }
 
+    /* ── Multi-image field ── */
+    .images-field-wrap {
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .images-field-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .image-entry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border2);
+      background: var(--bg);
+    }
+    .image-entry:last-child { border-bottom: none; }
+    .image-entry-num {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--purple-l);
+      min-width: 18px;
+      text-align: center;
+      opacity: 0.7;
+    }
+    .image-entry input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      padding: 3px 0;
+      outline: none;
+    }
+    .image-entry input::placeholder { color: rgba(255,255,255,0.2); }
+    .image-entry-remove {
+      background: none;
+      border: none;
+      color: rgba(239,68,68,0.5);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .image-entry-remove:hover { color: var(--danger); background: rgba(239,68,68,0.1); }
+    .images-field-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      background: rgba(168,85,247,0.04);
+      border-top: 1px solid var(--border2);
+    }
+    .images-field-footer span { font-size: 10px; color: var(--dim); }
+    .images-add-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--purple-l);
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .images-add-btn:hover { background: rgba(168,85,247,0.1); border-color: var(--purple); }
+
     /* ── Buttons ── */
     .btn {
       display: inline-flex;
@@ -248,6 +322,17 @@
 
     /* ── Section order badge ── */
     .order-badge { background: rgba(168,85,247,0.15); color: var(--purple-l); font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+
+    /* ── Image count badge on cards ── */
+    .img-count-badge {
+      background: rgba(168,85,247,0.2);
+      color: var(--purple-l);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
 
     /* ── Responsive ── */
     @media (max-width: 700px) {
@@ -408,8 +493,8 @@
 // ════════════════════════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════════════════════════
-let config   = null;   // full config from server
-let modalCtx = null;   // { type, sectionId?, cardId?, resolve }
+let config   = null;
+let modalCtx = null;
 
 // ════════════════════════════════════════════════════════════════
 //  TOAST
@@ -437,7 +522,7 @@ async function api(method, path, body) {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  INIT — load config and render everything
+//  INIT
 // ════════════════════════════════════════════════════════════════
 async function init() {
   try {
@@ -480,13 +565,13 @@ function renderSocials() {
   const list = document.getElementById('socials-list');
   list.innerHTML = '';
   const sorted = [...(config.socials || [])].sort((a,b) => a.order - b.order);
-  sorted.forEach((s, i) => {
+  sorted.forEach(s => {
     const item = makeDragItem({
-      id:      s.id,
-      icon:    socialIcon(s.icon),
-      name:    s.label,
-      meta:    s.href,
-      onEdit:  () => openSocialModal(s.id),
+      id:     s.id,
+      icon:   socialIcon(s.icon),
+      name:   s.label,
+      meta:   s.href,
+      onEdit: () => openSocialModal(s.id),
     });
     list.appendChild(item);
   });
@@ -532,14 +617,13 @@ function renderSections() {
   list.innerHTML = '';
   const sorted = [...(config.sections || [])].sort((a,b) => a.order - b.order);
 
-  sorted.forEach((sec, si) => {
+  sorted.forEach(sec => {
     const wrap = document.createElement('div');
     wrap.className = 'drag-item';
     wrap.dataset.id = sec.id;
     wrap.setAttribute('draggable', 'true');
     wrap.style.flexDirection = 'column';
 
-    // Section header row
     const top = document.createElement('div');
     top.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%';
     top.innerHTML = `
@@ -553,7 +637,6 @@ function renderSections() {
     `;
     wrap.appendChild(top);
 
-    // Cards panel (collapsed by default)
     const cardsPanel = document.createElement('div');
     cardsPanel.id = `cards-panel-${sec.id}`;
     cardsPanel.style.cssText = 'display:none;width:100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--border2)';
@@ -569,7 +652,6 @@ function renderSections() {
 function toggleCards(secId) {
   const panel = document.getElementById(`cards-panel-${secId}`);
   panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  // Bind drag for cards inside panel
   const inner = panel.querySelector('.drag-list');
   if (inner) makeDraggable(inner, 'card', secId);
 }
@@ -581,7 +663,13 @@ function renderCardsHTML(sec) {
     <button class="btn btn-primary btn-sm" onclick="openNewCardModal('${sec.id}')">+ New Card</button>
   `;
 
-  const items = sorted.map(c => `
+  const items = sorted.map(c => {
+    const imgCount = getImageCount(c);
+    const imgBadge = (sec.type === 'info' && imgCount > 0)
+      ? `<span class="img-count-badge">${imgCount} photo${imgCount !== 1 ? 's' : ''}</span>`
+      : '';
+
+    return `
     <div class="drag-item" data-id="${c.id}" draggable="true" style="cursor:grab">
       <span class="drag-handle">⠿</span>
       <div class="drag-item-body">
@@ -589,6 +677,7 @@ function renderCardsHTML(sec) {
           <span class="drag-item-icon">${c.icon || '🔗'}</span>
           <span class="drag-item-name">${esc(c.label)}</span>
           ${c.cta ? `<span class="order-badge">${esc(c.cta)}</span>` : ''}
+          ${imgBadge}
         </div>
         ${(c.href || c.address) ? `<div class="drag-item-meta">${esc(c.href || c.address)}</div>` : ''}
       </div>
@@ -597,7 +686,7 @@ function renderCardsHTML(sec) {
         <button class="btn btn-danger btn-sm" onclick="deleteCard('${sec.id}','${c.id}')">✕</button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 
   return `<div class="drag-list" data-section="${sec.id}">${items}</div>
   <div style="margin-top:10px;display:flex;gap:8px;">
@@ -606,6 +695,105 @@ function renderCardsHTML(sec) {
   </div>`;
 }
 
+/** Returns total image count for a card (supports both `images` array and legacy `image` string) */
+function getImageCount(card) {
+  if (Array.isArray(card.images)) return card.images.filter(Boolean).length;
+  if (card.image) return 1;
+  return 0;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MULTI-IMAGE FIELD BUILDER
+//  Renders an editable list of image paths inside the modal.
+//  Works for both new and existing cards.
+// ════════════════════════════════════════════════════════════════
+
+/**
+ * Build the images field HTML.
+ * @param {string[]} imgs  — current array of image paths
+ * @param {string}   wrapperId — id for the outer wrap element
+ */
+function buildImagesField(imgs, wrapperId = 'mf-images-wrap') {
+  const rows = imgs.length > 0
+    ? imgs.map((src, i) => imageEntryHTML(i, src)).join('')
+    : imageEntryHTML(0, '');
+
+  return `
+    <div class="field">
+      <label>Photos <span style="font-size:10px;text-transform:none;letter-spacing:0;opacity:0.6">(swipeable gallery in app)</span></label>
+      <div class="images-field-wrap" id="${wrapperId}">
+        <div class="images-field-list" id="mf-images-list">
+          ${rows}
+        </div>
+        <div class="images-field-footer">
+          <span>Drag to reorder · remove with ✕</span>
+          <button type="button" class="images-add-btn" onclick="addImageEntry()">+ Add Photo</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function imageEntryHTML(index, value) {
+  return `
+    <div class="image-entry" draggable="true" ondragstart="imgDragStart(event)" ondragover="imgDragOver(event)" ondrop="imgDrop(event)">
+      <span class="image-entry-num">${index + 1}</span>
+      <input type="text" placeholder="assets/photo.jpg" value="${esc(value)}">
+      <button type="button" class="image-entry-remove" onclick="removeImageEntry(this)" title="Remove">✕</button>
+    </div>
+  `;
+}
+
+function addImageEntry() {
+  const list = document.getElementById('mf-images-list');
+  const count = list.querySelectorAll('.image-entry').length;
+  list.insertAdjacentHTML('beforeend', imageEntryHTML(count, ''));
+  renumberImageEntries();
+  // Focus the new input
+  const inputs = list.querySelectorAll('.image-entry input');
+  inputs[inputs.length - 1]?.focus();
+}
+
+function removeImageEntry(btn) {
+  btn.closest('.image-entry').remove();
+  renumberImageEntries();
+}
+
+function renumberImageEntries() {
+  document.querySelectorAll('#mf-images-list .image-entry').forEach((row, i) => {
+    row.querySelector('.image-entry-num').textContent = i + 1;
+  });
+}
+
+/** Collect current images array from the modal field */
+function collectImages() {
+  const list = document.getElementById('mf-images-list');
+  if (!list) return [];
+  return [...list.querySelectorAll('.image-entry input')]
+    .map(inp => inp.value.trim())
+    .filter(Boolean);
+}
+
+// ── Image entry drag-to-reorder ───────────────────────────────
+let _imgDragSrc = null;
+function imgDragStart(e) { _imgDragSrc = e.currentTarget; e.dataTransfer.effectAllowed = 'move'; }
+function imgDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function imgDrop(e) {
+  e.preventDefault();
+  if (!_imgDragSrc || _imgDragSrc === e.currentTarget) return;
+  const list = document.getElementById('mf-images-list');
+  const items = [...list.querySelectorAll('.image-entry')];
+  const from  = items.indexOf(_imgDragSrc);
+  const to    = items.indexOf(e.currentTarget);
+  if (from < to) list.insertBefore(_imgDragSrc, e.currentTarget.nextSibling);
+  else           list.insertBefore(_imgDragSrc, e.currentTarget);
+  renumberImageEntries();
+  _imgDragSrc = null;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  CARD MODAL
+// ════════════════════════════════════════════════════════════════
 function openSectionModal(secId) {
   const sec = config.sections.find(s => s.id === secId);
   modalCtx = { type: 'section', secId };
@@ -619,7 +807,7 @@ function openSectionModal(secId) {
 function openCardModal(secId, cardId) {
   const sec  = config.sections.find(s => s.id === secId);
   const card = sec.cards.find(c => c.id === cardId);
-  modalCtx = { type: 'card', secId, cardId };
+  modalCtx   = { type: 'card', secId, cardId };
   document.getElementById('modal-title').textContent = 'Edit Card — ' + card.label;
 
   let fields = `<div class="field"><label>Label / Title</label><input id="mf-label" value="${esc(card.label)}"></div>`;
@@ -637,9 +825,13 @@ function openCardModal(secId, cardId) {
       <div class="field"><label>Link URL</label><input id="mf-href" value="${esc(card.href||'')}"></div>
     `;
   } else if (sec.type === 'info') {
+    // Normalise: prefer images[], fall back to image string
+    const existingImgs = Array.isArray(card.images) && card.images.length > 0
+      ? card.images
+      : (card.image ? [card.image] : []);
     fields += `
       <div class="field"><label>Icon (emoji)</label><input id="mf-icon" value="${esc(card.icon||'')}"></div>
-      <div class="field"><label>Image Path</label><input id="mf-image" value="${esc(card.image||'')}"></div>
+      ${buildImagesField(existingImgs)}
     `;
   } else if (sec.type === 'location') {
     fields += `
@@ -675,16 +867,26 @@ async function saveModal() {
     }
 
     if (ctx.type === 'card') {
-      const si = config.sections.findIndex(s => s.id === ctx.secId);
-      const ci = config.sections[si].cards.findIndex(c => c.id === ctx.cardId);
-      const c  = config.sections[si].cards[ci];
+      const si  = config.sections.findIndex(s => s.id === ctx.secId);
+      const ci  = config.sections[si].cards.findIndex(c => c.id === ctx.cardId);
+      const c   = config.sections[si].cards[ci];
+      const sec = config.sections[si];
+
       c.label   = val('mf-label')   ?? c.label;
       c.href    = val('mf-href')    ?? c.href;
       c.cta     = val('mf-cta')     ?? c.cta;
       c.icon    = val('mf-icon')    ?? c.icon;
-      c.image   = val('mf-image')   ?? c.image;
       c.alt     = val('mf-alt')     ?? c.alt;
       c.address = val('mf-address') ?? c.address;
+
+      if (sec.type === 'info') {
+        // Save as `images` array; clear legacy `image` field
+        c.images = collectImages();
+        c.image  = c.images[0] || '';   // keep for backwards compat with old frontend
+      } else {
+        c.image = val('mf-image') ?? c.image;
+      }
+
       renderSections();
       toast('Card updated — click "Save All Section Changes" to persist');
     }
@@ -711,6 +913,7 @@ async function saveModal() {
       if (!label) { toast('Please enter a card label', false); return; }
       const si  = config.sections.findIndex(s => s.id === ctx.secId);
       const sec = config.sections[si];
+
       const newCard = {
         id:      'card-' + Date.now(),
         label,
@@ -718,14 +921,20 @@ async function saveModal() {
         href:    val('mf-href')    || '',
         cta:     val('mf-cta')    || '',
         icon:    val('mf-icon')   || '🔗',
-        image:   val('mf-image')  || '',
         alt:     val('mf-alt')    || '',
         address: val('mf-address')|| '',
       };
+
+      if (sec.type === 'info') {
+        newCard.images = collectImages();
+        newCard.image  = newCard.images[0] || '';
+      } else {
+        newCard.image = val('mf-image') || '';
+      }
+
       sec.cards.push(newCard);
       await api('PUT', '/sections', { sections: config.sections });
       renderSections();
-      // Re-open the cards panel
       setTimeout(() => {
         const panel = document.getElementById(`cards-panel-${ctx.secId}`);
         if (panel) panel.style.display = 'block';
@@ -756,7 +965,7 @@ function openNewSectionModal() {
       <select id="mf-type">
         <option value="promo">Promo — cards with image + CTA button</option>
         <option value="link">Link — simple link cards with icon</option>
-        <option value="info">Info — cards that open an image modal</option>
+        <option value="info">Info — cards that open a photo gallery</option>
         <option value="location">Location — address + maps link</option>
       </select>
     </div>
@@ -787,7 +996,7 @@ function openNewCardModal(secId) {
   } else if (sec.type === 'info') {
     fields += `
       <div class="field"><label>Icon (emoji)</label><input id="mf-icon" placeholder="📄"></div>
-      <div class="field"><label>Image Path</label><input id="mf-image" placeholder="assets/image.png"></div>
+      ${buildImagesField([])}
     `;
   } else if (sec.type === 'location') {
     fields += `
@@ -822,7 +1031,6 @@ async function deleteCard(secId, cardId) {
   try {
     await api('PUT', '/sections', { sections: config.sections });
     renderSections();
-    // Re-open the cards panel for that section
     const panel = document.getElementById(`cards-panel-${secId}`);
     if (panel) panel.style.display = 'block';
     toast('Card deleted!');
@@ -842,7 +1050,6 @@ async function saveCards(secId) {
   try {
     await api('PUT', `/sections/${secId}/cards`, { cards: reordered });
     sec.cards = reordered;
-    // Also save everything so it's consistent
     await api('PUT', '/sections', { sections: config.sections });
     toast('Cards saved!');
   } catch (e) { toast(e.message, false); }
@@ -901,13 +1108,12 @@ async function seedDefaults() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  DRAG & DROP
+//  DRAG & DROP (sections / socials / cards)
 // ════════════════════════════════════════════════════════════════
 function makeDraggable(list, type, secId) {
   let dragged = null;
 
   list.querySelectorAll('.drag-item').forEach(item => {
-    // Remove old listeners
     const clone = item.cloneNode(true);
     item.parentNode.replaceChild(clone, item);
   });
@@ -940,11 +1146,8 @@ function makeDraggable(list, type, secId) {
       const items = [...list.querySelectorAll('.drag-item')];
       const draggedIdx = items.indexOf(dragged);
       const targetIdx  = items.indexOf(item);
-      if (draggedIdx < targetIdx) {
-        list.insertBefore(dragged, item.nextSibling);
-      } else {
-        list.insertBefore(dragged, item);
-      }
+      if (draggedIdx < targetIdx) list.insertBefore(dragged, item.nextSibling);
+      else                        list.insertBefore(dragged, item);
       item.classList.remove('drag-over');
     });
   });
@@ -999,7 +1202,6 @@ const observer = new IntersectionObserver(entries => {
 
 document.querySelectorAll('.page-section').forEach(s => observer.observe(s));
 
-// Close modal on backdrop click
 document.getElementById('edit-modal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
 });

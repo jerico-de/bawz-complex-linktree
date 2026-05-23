@@ -76,8 +76,8 @@ const DEFAULT_CONFIG = {
   ],
 
   crazyMode: {
-    message: "GOODLUCK JRSEA!",
-    imageAsset: "assets/jrsea.jpg",
+    message: "WELCOME TO BAWZ COMPLEX!",
+    imageAsset: "",
     clickThreshold: 5,
     hoverThresholdSeconds: 5,
   },

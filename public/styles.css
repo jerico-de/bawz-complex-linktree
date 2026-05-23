@@ -781,3 +781,145 @@ footer                { animation: fadeUp 0.6s ease both 0.56s; }
     .share-btn:active::before { transform: scaleX(1); }
     .share-btn:active { color: var(--white); }
 }
+
+.gallery-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .gallery-modal.open { display: flex; }
+
+    .gallery-modal-inner {
+      position: relative;
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      user-select: none;
+    }
+
+    /* Close button */
+    .gallery-close {
+      position: absolute;
+      top: -44px;
+      right: 0;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: color 0.2s;
+      z-index: 10;
+    }
+    .gallery-close:hover { color: #fff; }
+
+    /* Image track — clips to one image at a time */
+    .gallery-track-wrap {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+      position: relative;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .gallery-track {
+      display: flex;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
+    }
+
+    .gallery-slide {
+      flex: 0 0 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 260px;
+      max-height: 70vh;
+    }
+
+    .gallery-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      max-height: 70vh;
+      display: block;
+      border-radius: 11px;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Prev / Next arrows */
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 5;
+      transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .gallery-arrow:hover { background: rgba(0,0,0,0.8); border-color: rgba(255,255,255,0.3); }
+    .gallery-arrow.hidden { opacity: 0; pointer-events: none; }
+    .gallery-arrow--prev { left: 10px; }
+    .gallery-arrow--next { right: 10px; }
+
+    /* Dot indicators */
+    .gallery-dots {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .gallery-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: background 0.25s, transform 0.25s;
+      border: none;
+      padding: 0;
+    }
+    .gallery-dot.active {
+      background: #fff;
+      transform: scale(1.35);
+    }
+
+    /* Counter label */
+    .gallery-counter {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+    }
+
+    /* Hide arrows + dots when only 1 image */
+    .gallery-modal[data-single="true"] .gallery-arrow,
+    .gallery-modal[data-single="true"] .gallery-dots,
+    .gallery-modal[data-single="true"] .gallery-counter {
+      display: none;
+    }
