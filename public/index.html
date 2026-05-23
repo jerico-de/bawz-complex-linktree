@@ -339,14 +339,6 @@
     // ══════════════════════════════════════════════════════
     //  HELPERS
     // ══════════════════════════════════════════════════════
-
-    /**
-     * Normalise a card's image data to always return an array of strings.
-     * Supports:
-     *   c.images = ['a.jpg','b.jpg']   ← new format
-     *   c.image  = 'a.jpg'             ← legacy single
-     *   c.image  = ''                  ← no image
-     */
     function normaliseImages(card) {
       if (Array.isArray(card.images) && card.images.length > 0) {
         return card.images.filter(Boolean);
