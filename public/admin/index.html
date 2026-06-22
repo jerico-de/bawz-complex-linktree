@@ -365,6 +365,104 @@
     .upload-btn:hover { background: rgba(168,85,247,0.1); border-color: var(--purple); }
     .upload-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .upload-input-hidden { display: none; }
+
+    /* ── Media Picker Modal ── */
+    #media-modal .modal-box { max-width: 700px; }
+    .media-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
+    .media-search {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      padding: 8px 12px;
+      outline: none;
+    }
+    .media-search:focus { border-color: var(--purple); }
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .media-grid::-webkit-scrollbar { width: 4px; }
+    .media-grid::-webkit-scrollbar-track { background: var(--surface2); }
+    .media-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .media-thumb {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      background: var(--surface2);
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .media-thumb:hover { border-color: var(--purple); transform: scale(1.03); }
+    .media-thumb.selected { border-color: var(--purple); box-shadow: 0 0 0 2px rgba(168,85,247,0.4); }
+    .media-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .media-thumb-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      font-size: 9px;
+      padding: 3px 5px;
+      color: rgba(255,255,255,0.7);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .media-thumb:hover .media-thumb-name { opacity: 1; }
+    .media-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px;
+      color: var(--dim);
+      font-size: 13px;
+    }
+    .media-loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px;
+      color: var(--dim);
+      font-size: 13px;
+    }
+
+    /* ── Choose button next to image fields ── */
+    .choose-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--purple-l);
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .choose-btn:hover { background: rgba(168,85,247,0.1); border-color: var(--purple); }
   </style>
 </head>
 <body>
@@ -462,7 +560,9 @@
         <div class="field">
           <label>Image</label>
           <div class="upload-row">
-            <input type="text" id="crazy-image" placeholder="assets/jrsea.jpg or Cloudinary URL">
+            <input type="text" id="crazy-image" placeholder="Select or upload an image">
+            <button type="button" class="choose-btn"
+              onclick="openMediaPicker(document.getElementById('crazy-image'))">📷 Choose</button>
             <button type="button" class="upload-btn"
               onclick="uploadImage(document.getElementById('crazy-image'), this)">↑ Upload</button>
           </div>
@@ -501,6 +601,25 @@
     </section>
 
   </main>
+</div>
+
+<!-- ── Media Picker Modal ── -->
+<div class="modal-overlay" id="media-modal">
+  <div class="modal-box">
+    <div class="modal-title">Media Library</div>
+    <div class="media-toolbar">
+      <input class="media-search" id="media-search" placeholder="Search by filename…" oninput="filterMediaGrid()">
+      <button class="btn btn-primary btn-sm" onclick="triggerMediaUpload()">↑ Upload New</button>
+      <input type="file" id="media-upload-input" accept="image/*" style="display:none" onchange="handleMediaUpload(this)">
+    </div>
+    <div class="media-grid" id="media-grid">
+      <div class="media-loading">Loading…</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeMediaModal()">Cancel</button>
+      <button class="btn btn-primary" id="media-select-btn" onclick="confirmMediaSelection()" disabled>Select Image</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── Edit Modal ── -->
@@ -605,6 +724,15 @@ function renderSocials() {
     list.appendChild(item);
   });
   makeDraggable(list, 'social');
+
+  list.querySelectorAll('.drag-item').forEach(item => {
+    const socialId = item.dataset.id;
+    const btn = item.querySelector('.edit-btn');
+    if (btn) btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openSocialModal(socialId);
+    });
+  });
 }
 
 function socialIcon(id) {
@@ -733,15 +861,8 @@ function getImageCount(card) {
 
 // ════════════════════════════════════════════════════════════════
 //  MULTI-IMAGE FIELD BUILDER
-//  Renders an editable list of image paths inside the modal.
-//  Works for both new and existing cards.
 // ════════════════════════════════════════════════════════════════
 
-/**
- * Build the images field HTML.
- * @param {string[]} imgs  — current array of image paths
- * @param {string}   wrapperId — id for the outer wrap element
- */
 function buildImagesField(imgs, wrapperId = 'mf-images-wrap') {
   const rows = imgs.length > 0
     ? imgs.map((src, i) => imageEntryHTML(i, src)).join('')
@@ -765,14 +886,16 @@ function buildImagesField(imgs, wrapperId = 'mf-images-wrap') {
 
 function imageEntryHTML(index, value) {
   return `
-      <div class="image-entry" draggable="true" ondragstart="imgDragStart(event)" ondragover="imgDragOver(event)" ondrop="imgDrop(event)">
-        <span class="image-entry-num">${index + 1}</span>
-        <input type="text" placeholder="assets/photo.jpg or Cloudinary URL" value="${esc(value)}">
-        <button type="button" class="upload-btn" style="padding:3px 8px;font-size:10px"
-          onclick="uploadImage(this.previousElementSibling, this)">↑</button>
-        <button type="button" class="image-entry-remove" onclick="removeImageEntry(this)" title="Remove">✕</button>
-      </div>
-    `;
+    <div class="image-entry" draggable="true" ondragstart="imgDragStart(event)" ondragover="imgDragOver(event)" ondrop="imgDrop(event)">
+      <span class="image-entry-num">${index + 1}</span>
+      <input type="text" placeholder="Select or upload an image" value="${esc(value)}">
+      <button type="button" class="choose-btn" style="padding:3px 8px;font-size:10px"
+        onclick="openMediaPicker(this.previousElementSibling)">📷</button>
+      <button type="button" class="upload-btn" style="padding:3px 8px;font-size:10px"
+        onclick="uploadImage(this.previousElementSibling.previousElementSibling, this)">↑</button>
+      <button type="button" class="image-entry-remove" onclick="removeImageEntry(this)" title="Remove">✕</button>
+    </div>
+  `;
 }
 
 function addImageEntry() {
@@ -850,7 +973,8 @@ function openCardModal(secId, cardId) {
       <div class="field">
         <label>Image</label>
         <div class="upload-row">
-          <input id="mf-image" value="${esc(card.image||'')}" placeholder="assets/image.png or Cloudinary URL">
+          <input id="mf-image" value="${esc(card.image||'')}" placeholder="Select or upload an image">
+          <button type="button" class="choose-btn" onclick="openMediaPicker(document.getElementById('mf-image'))">📷 Choose</button>
           <button type="button" class="upload-btn" onclick="uploadImage(document.getElementById('mf-image'), this)">↑ Upload</button>
         </div>
       </div>
@@ -1025,7 +1149,8 @@ function openNewCardModal(secId) {
       <div class="field">
         <label>Image</label>
         <div class="upload-row">
-          <input id="mf-image" placeholder="assets/image.png or Cloudinary URL">
+          <input id="mf-image" placeholder="Select or upload an image">
+          <button type="button" class="choose-btn" onclick="openMediaPicker(document.getElementById('mf-image'))">📷 Choose</button>
           <button type="button" class="upload-btn" onclick="uploadImage(document.getElementById('mf-image'), this)">↑ Upload</button>
         </div>
       </div>
@@ -1203,6 +1328,7 @@ function makeDragItem({ id, icon, name, meta, onEdit }) {
   const div = document.createElement('div');
   div.className = 'drag-item';
   div.dataset.id = id;
+  div.dataset.editHandler = id; // marker for delegation
   div.setAttribute('draggable', 'true');
   div.innerHTML = `
     <span class="drag-handle">⠿</span>
@@ -1217,7 +1343,7 @@ function makeDragItem({ id, icon, name, meta, onEdit }) {
       <button class="btn btn-ghost btn-sm edit-btn">Edit</button>
     </div>
   `;
-  div.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); onEdit(); });
+  div._onEdit = onEdit;
   return div;
 }
 
@@ -1288,6 +1414,114 @@ async function uploadImage(targetInput, btn) {
 
   fileInput.click();
 }
+
+// ════════════════════════════════════════════════════════════════
+//  MEDIA PICKER
+// ════════════════════════════════════════════════════════════════
+let mediaImages      = [];
+let mediaTarget      = null; // the input to fill on selection
+let mediaSelected    = null; // currently highlighted URL
+
+async function openMediaPicker(targetInput) {
+  mediaTarget   = targetInput;
+  mediaSelected = null;
+  document.getElementById('media-select-btn').disabled = true;
+  document.getElementById('media-search').value = '';
+  document.getElementById('media-modal').classList.add('open');
+  await loadMediaGrid();
+}
+
+async function loadMediaGrid() {
+  const grid = document.getElementById('media-grid');
+  grid.innerHTML = '<div class="media-loading">Loading…</div>';
+  try {
+    const res  = await fetch('/api/admin/media');
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    mediaImages = json.data;
+    renderMediaGrid(mediaImages);
+  } catch (e) {
+    grid.innerHTML = `<div class="media-empty">Failed to load: ${e.message}</div>`;
+  }
+}
+
+function renderMediaGrid(images) {
+  const grid = document.getElementById('media-grid');
+  if (!images.length) {
+    grid.innerHTML = '<div class="media-empty">No images uploaded yet. Click "↑ Upload New" to add some.</div>';
+    return;
+  }
+  grid.innerHTML = images.map(img => `
+    <div class="media-thumb" data-url="${esc(img.url)}" onclick="selectMediaThumb(this, '${esc(img.url)}')">
+      <img src="${esc(img.url)}" alt="${esc(img.filename)}" loading="lazy">
+      <div class="media-thumb-name">${esc(img.filename)}</div>
+    </div>
+  `).join('');
+}
+
+function selectMediaThumb(el, url) {
+  // Deselect previous
+  document.querySelectorAll('.media-thumb.selected').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  mediaSelected = url;
+  document.getElementById('media-select-btn').disabled = false;
+}
+
+function filterMediaGrid() {
+  const q = document.getElementById('media-search').value.toLowerCase();
+  const filtered = mediaImages.filter(img => img.filename.toLowerCase().includes(q));
+  renderMediaGrid(filtered);
+}
+
+function confirmMediaSelection() {
+  if (mediaSelected && mediaTarget) {
+    mediaTarget.value = mediaSelected;
+    mediaTarget.dispatchEvent(new Event('input'));
+  }
+  closeMediaModal();
+}
+
+function closeMediaModal() {
+  document.getElementById('media-modal').classList.remove('open');
+  mediaTarget   = null;
+  mediaSelected = null;
+}
+
+// Upload a new image directly from the media modal
+function triggerMediaUpload() {
+  document.getElementById('media-upload-input').click();
+}
+
+async function handleMediaUpload(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const btn = document.querySelector('#media-modal .btn-primary:not(#media-select-btn)');
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Uploading…';
+  btn.disabled    = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res  = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    toast('Uploaded! Refreshing library…');
+    await loadMediaGrid();
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.textContent  = originalLabel;
+    btn.disabled     = false;
+    fileInput.value  = ''; 
+  }
+}
+
+// Close media modal on backdrop click
+document.getElementById('media-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeMediaModal();
+});
 
 // ── Boot ──
 init();

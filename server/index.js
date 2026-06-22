@@ -259,6 +259,30 @@ api.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+/** GET /api/admin/media — list all images in the bawz-complex Cloudinary folder */
+api.get('/media', async (req, res) => {
+  try {
+    const result = await cloudinary.api.resources({
+      type:        'upload',
+      prefix:      'bawz-complex/',
+      max_results: 100,
+    });
+
+    const images = result.resources.map(r => ({
+      url:        r.secure_url,
+      public_id:  r.public_id,
+      filename:   r.public_id.replace('bawz-complex/', ''),
+      bytes:      r.bytes,
+      created_at: r.created_at,
+    }));
+
+    res.json({ ok: true, data: images });
+  } catch (err) {
+    console.error('Cloudinary list error:', err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 app.use('/api/admin', api);
 
 // ─── 404 fallback ────────────────────────────────────────────────
