@@ -340,6 +340,31 @@
       .content { padding: 20px; }
       .field-row { flex-direction: column; }
     }
+
+    /* ── Upload button ── */
+    .upload-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .upload-row input { flex: 1; }
+    .upload-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--purple-l);
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .upload-btn:hover { background: rgba(168,85,247,0.1); border-color: var(--purple); }
+    .upload-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .upload-input-hidden { display: none; }
   </style>
 </head>
 <body>
@@ -435,8 +460,12 @@
           <input type="text" id="crazy-message" placeholder="GOODLUCK JRSEA!">
         </div>
         <div class="field">
-          <label>Image Path (relative to your assets folder)</label>
-          <input type="text" id="crazy-image" placeholder="assets/jrsea.jpg">
+          <label>Image</label>
+          <div class="upload-row">
+            <input type="text" id="crazy-image" placeholder="assets/jrsea.jpg or Cloudinary URL">
+            <button type="button" class="upload-btn"
+              onclick="uploadImage(document.getElementById('crazy-image'), this)">↑ Upload</button>
+          </div>
         </div>
         <div class="field-row">
           <div class="field">
@@ -736,12 +765,14 @@ function buildImagesField(imgs, wrapperId = 'mf-images-wrap') {
 
 function imageEntryHTML(index, value) {
   return `
-    <div class="image-entry" draggable="true" ondragstart="imgDragStart(event)" ondragover="imgDragOver(event)" ondrop="imgDrop(event)">
-      <span class="image-entry-num">${index + 1}</span>
-      <input type="text" placeholder="assets/photo.jpg" value="${esc(value)}">
-      <button type="button" class="image-entry-remove" onclick="removeImageEntry(this)" title="Remove">✕</button>
-    </div>
-  `;
+      <div class="image-entry" draggable="true" ondragstart="imgDragStart(event)" ondragover="imgDragOver(event)" ondrop="imgDrop(event)">
+        <span class="image-entry-num">${index + 1}</span>
+        <input type="text" placeholder="assets/photo.jpg or Cloudinary URL" value="${esc(value)}">
+        <button type="button" class="upload-btn" style="padding:3px 8px;font-size:10px"
+          onclick="uploadImage(this.previousElementSibling, this)">↑</button>
+        <button type="button" class="image-entry-remove" onclick="removeImageEntry(this)" title="Remove">✕</button>
+      </div>
+    `;
 }
 
 function addImageEntry() {
@@ -816,7 +847,13 @@ function openCardModal(secId, cardId) {
     fields += `
       <div class="field"><label>Link URL</label><input id="mf-href" value="${esc(card.href||'')}"></div>
       <div class="field"><label>CTA Button Text</label><input id="mf-cta" value="${esc(card.cta||'')}"></div>
-      <div class="field"><label>Image Path</label><input id="mf-image" value="${esc(card.image||'')}"></div>
+      <div class="field">
+        <label>Image</label>
+        <div class="upload-row">
+          <input id="mf-image" value="${esc(card.image||'')}" placeholder="assets/image.png or Cloudinary URL">
+          <button type="button" class="upload-btn" onclick="uploadImage(document.getElementById('mf-image'), this)">↑ Upload</button>
+        </div>
+      </div>
       <div class="field"><label>Image Alt Text</label><input id="mf-alt" value="${esc(card.alt||'')}"></div>
     `;
   } else if (sec.type === 'link') {
@@ -985,7 +1022,13 @@ function openNewCardModal(secId) {
     fields += `
       <div class="field"><label>Link URL</label><input id="mf-href" placeholder="https://..."></div>
       <div class="field"><label>CTA Button Text</label><input id="mf-cta" placeholder="JOIN NOW"></div>
-      <div class="field"><label>Image Path</label><input id="mf-image" placeholder="assets/image.png"></div>
+      <div class="field">
+        <label>Image</label>
+        <div class="upload-row">
+          <input id="mf-image" placeholder="assets/image.png or Cloudinary URL">
+          <button type="button" class="upload-btn" onclick="uploadImage(document.getElementById('mf-image'), this)">↑ Upload</button>
+        </div>
+      </div>
       <div class="field"><label>Image Alt Text</label><input id="mf-alt" placeholder="Description of image"></div>
     `;
   } else if (sec.type === 'link') {
@@ -1205,6 +1248,46 @@ document.querySelectorAll('.page-section').forEach(s => observer.observe(s));
 document.getElementById('edit-modal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
 });
+
+// ════════════════════════════════════════════════════════════════
+//  CLOUDINARY UPLOAD HELPER
+// ════════════════════════════════════════════════════════════════
+
+async function uploadImage(targetInput, btn) {
+  // Create a hidden file input and trigger it
+  const fileInput = document.createElement('input');
+  fileInput.type   = 'file';
+  fileInput.accept = 'image/*';
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Uploading…';
+    btn.disabled    = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res  = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      const json = await res.json();
+
+      if (!json.ok) throw new Error(json.error || 'Upload failed');
+
+      targetInput.value = json.data.url;
+      toast('Image uploaded!');
+    } catch (e) {
+      toast(e.message, false);
+    } finally {
+      btn.textContent = originalLabel;
+      btn.disabled    = false;
+    }
+  });
+
+  fileInput.click();
+}
 
 // ── Boot ──
 init();

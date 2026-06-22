@@ -20,7 +20,7 @@ const DEFAULT_CONFIG = {
           label: "Class Cards",
           cta: "PURCHASE",
           href: "https://docs.google.com/forms/d/e/1FAIpQLSfleQ3CEFmvyauaWlXSZhNPNJAFSbujzF8G40liNkyJmi8wfA/viewform",
-          image: "assets/class-cards.png",
+          image: "https://res.cloudinary.com/dqlp2jeog/image/upload/v1782155449/class-cards_toggze.png",
           alt: "Bawz Complex Class Cards",
           order: 0,
         },
@@ -29,7 +29,7 @@ const DEFAULT_CONFIG = {
           label: "Bawz Complex Summer Dance Camp Year 2",
           cta: "JOIN NOW",
           href: "https://forms.gle/jMaNf6L4WeNKYz4D9",
-          image: "assets/Bawz Camp.png",
+          image: "https://res.cloudinary.com/dqlp2jeog/image/upload/v1782155448/Bawz_Camp_wxtwqp.png",
           alt: "Bawz Complex Summer Dance Camp",
           order: 1,
         },
@@ -53,8 +53,8 @@ const DEFAULT_CONFIG = {
       type: "info",
       order: 2,
       cards: [
-        { id: "house-rules", icon: "📋", label: "House Rules", image: "assets/HOUSE RULES.png", order: 0 },
-        { id: "rates",       icon: "💸", label: "Rates",       image: "assets/Studio.PNG",       order: 1 },
+        { id: "house-rules", icon: "📋", label: "House Rules", image: "https://res.cloudinary.com/dqlp2jeog/image/upload/v1782155451/house_rules_ujcsaf.png", order: 0 },
+        { id: "rates",       icon: "💸", label: "Rates",       image: "https://res.cloudinary.com/dqlp2jeog/image/upload/v1782155452/rental_rates_ah4til.png",       order: 1 },
       ],
     },
     {

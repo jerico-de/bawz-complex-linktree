@@ -6,9 +6,18 @@ const basicAuth    = require('express-basic-auth');
 const path         = require('path');
 const { db }       = require('./firebase');
 const DEFAULT_DATA = require('./defaultData');
+const cloudinary   = require('cloudinary').v2;
+const multer       = require('multer');
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ─── Middleware ──────────────────────────────────────────────────
 app.use(cors({origin: [
@@ -226,6 +235,26 @@ api.post('/seed', async (req, res) => {
     await CONFIG_DOC.set(DEFAULT_DATA);
     res.json({ ok: true, message: 'Database seeded with default data' });
   } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/** POST /api/admin/upload — upload an image to Cloudinary */
+api.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ ok: false, error: 'No file provided' });
+
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'bawz-complex' },
+        (error, result) => error ? reject(error) : resolve(result)
+      );
+      stream.end(req.file.buffer);
+    });
+
+    res.json({ ok: true, data: { url: result.secure_url, public_id: result.public_id } });
+  } catch (err) {
+    console.error('Cloudinary upload error:', err);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
