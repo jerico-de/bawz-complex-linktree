@@ -72,7 +72,6 @@ async function patchConfig(patch) {
 app.get('/api/config', async (req, res) => {
   try {
     const config = await getConfig();
-    res.json({ ok: true, data: config });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false, error: err.message });
@@ -246,45 +245,36 @@ api.post('/seed', async (req, res) => {
 // ── Media (Cloudinary) ────────────────────────────────────────────
 
 /**
- * GET /api/admin/upload-signature
+ * GET /api/admin/media — list images in the bawz-complex Cloudinary folder.
  */
-api.get('/upload-signature', (req, res) => {
-  try {
-    const timestamp = Math.round(Date.now() / 1000);
-    const folder    = 'bawz-complex';
-    const signature = cloudinary.utils.api_sign_request(
-      { timestamp, folder },
-      process.env.CLOUDINARY_API_SECRET
-    );
-    res.json({ ok: true, data: {
-      timestamp,
-      folder,
-      signature,
-      api_key:    process.env.CLOUDINARY_API_KEY,
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    }});
-  } catch (err) {
-    console.error('Signature error:', err);
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/** GET /api/admin/media — list all images in the bawz-complex Cloudinary folder */
 api.get('/media', async (req, res) => {
   try {
-    const result = await cloudinary.api.resources({
-      type:        'upload',
-      prefix:      'bawz-complex/',
-      max_results: 100,
-    });
+    let resources = [];
 
-    const images = result.resources.map(r => ({
-      url:        r.secure_url,
-      public_id:  r.public_id,
-      filename:   r.public_id.replace('bawz-complex/', ''),
-      bytes:      r.bytes,
-      created_at: r.created_at,
-    }));
+    try {
+      const r = await cloudinary.api.resources_by_asset_folder('bawz-complex', { max_results: 100 });
+      resources = r.resources;
+    } catch (_) { /* fixed-folder account or older SDK: fall through */ }
+
+    if (!resources.length) {
+      const r = await cloudinary.api.resources({
+        type:        'upload',
+        prefix:      'bawz-complex/',
+        max_results: 100,
+      });
+      resources = r.resources;
+    }
+
+    const images = resources
+      .map(r => ({
+        url:        r.secure_url,
+        public_id:  r.public_id,
+        filename:   r.display_name || r.public_id.replace('bawz-complex/', ''),
+        bytes:      r.bytes,
+        created_at: r.created_at,
+        thumb:      r.secure_url.replace('/upload/', '/upload/c_fill,w_240,h_240,q_auto,f_auto/'),
+      }))
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // newest first
 
     res.json({ ok: true, data: images });
   } catch (err) {
