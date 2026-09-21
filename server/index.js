@@ -40,6 +40,7 @@ const adminAuth = ADMIN_PASS
     })
   : (req, res) => res.status(503).send('Admin disabled: ADMIN_PASS not set');
 
+// Admin UI lives outside public/ so it can't be served without auth
 app.use('/admin', adminAuth, express.static(path.join(__dirname, '../admin-ui')));
 
 // ════════════════════════════════════════════════════════════════
