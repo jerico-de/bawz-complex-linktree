@@ -7,7 +7,6 @@ const path         = require('path');
 const { db }       = require('./firebase');
 const DEFAULT_DATA = require('./defaultData');
 const cloudinary   = require('cloudinary').v2;
-const multer       = require('multer');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -17,26 +16,31 @@ cloudinary.config({
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-const upload = multer({ storage: multer.memoryStorage() });
 
 // ─── Middleware ──────────────────────────────────────────────────
-app.use(cors({origin: [
-    'https://bawz-complex.vercel.app',
-    'https://bawz-complex-linktree-admin.onrender.com',
-    'http://localhost:3000',]}));
+app.use(cors({ origin: [
+  'https://bawz-complex.vercel.app',
+  'https://bawz-complex-linktree-admin.onrender.com',
+  'http://localhost:3000',
+]}));
 app.use(express.json());
 
-// ─── Serve the main site's public files ─────────────────────────
-app.use(express.static(path.join(__dirname, '../public')));
+// ─── Serve the main site's public files (local / Render only) ────
+if (!process.env.VERCEL) {
+  app.use(express.static(path.join(__dirname, '../public')));
+}
 
 // ─── Basic auth for /admin routes ───────────────────────────────
-const adminAuth = basicAuth({
-  users: { [process.env.ADMIN_USER || 'admin']: process.env.ADMIN_PASS || 'changeme123' },
-  challenge: true,
-  realm: 'Bawz Admin',
-});
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const adminAuth = ADMIN_PASS
+  ? basicAuth({
+      users: { [process.env.ADMIN_USER || 'admin']: ADMIN_PASS },
+      challenge: true,
+      realm: 'Bawz Admin',
+    })
+  : (req, res) => res.status(503).send('Admin disabled: ADMIN_PASS not set');
 
-app.use('/admin', adminAuth, express.static(path.join(__dirname, '../public/admin')));
+app.use('/admin', adminAuth, express.static(path.join(__dirname, '../admin-ui')));
 
 // ════════════════════════════════════════════════════════════════
 //  FIRESTORE HELPERS
@@ -44,7 +48,6 @@ app.use('/admin', adminAuth, express.static(path.join(__dirname, '../public/admi
 
 const CONFIG_DOC = db.collection('config').doc('site');
 
-/** Return site config, seeding defaults if doc doesn't exist yet */
 async function getConfig() {
   const snap = await CONFIG_DOC.get();
   if (!snap.exists) {
@@ -218,9 +221,9 @@ api.get('/crazymode', async (req, res) => {
 /** PATCH /api/admin/crazymode */
 api.patch('/crazymode', async (req, res) => {
   try {
-    const config  = await getConfig();
+    const config    = await getConfig();
     const crazyMode = { ...config.crazyMode, ...req.body };
-    const updated = await patchConfig({ crazyMode });
+    const updated   = await patchConfig({ crazyMode });
     res.json({ ok: true, data: updated.crazyMode });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -239,22 +242,28 @@ api.post('/seed', async (req, res) => {
   }
 });
 
-/** POST /api/admin/upload — upload an image to Cloudinary */
-api.post('/upload', upload.single('file'), async (req, res) => {
+// ── Media (Cloudinary) ────────────────────────────────────────────
+
+/**
+ * GET /api/admin/upload-signature
+ */
+api.get('/upload-signature', (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ ok: false, error: 'No file provided' });
-
-    const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: 'bawz-complex' },
-        (error, result) => error ? reject(error) : resolve(result)
-      );
-      stream.end(req.file.buffer);
-    });
-
-    res.json({ ok: true, data: { url: result.secure_url, public_id: result.public_id } });
+    const timestamp = Math.round(Date.now() / 1000);
+    const folder    = 'bawz-complex';
+    const signature = cloudinary.utils.api_sign_request(
+      { timestamp, folder },
+      process.env.CLOUDINARY_API_SECRET
+    );
+    res.json({ ok: true, data: {
+      timestamp,
+      folder,
+      signature,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    }});
   } catch (err) {
-    console.error('Cloudinary upload error:', err);
+    console.error('Signature error:', err);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
@@ -288,10 +297,14 @@ app.use('/api/admin', api);
 // ─── 404 fallback ────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ ok: false, error: 'Not found' }));
 
-// ─── Start ───────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🎵 Bawz Complex Admin Server`);
-  console.log(`   Site:  https://bawz-complex.vercel.app/`);
-  console.log(`   Admin: https://bawz-complex-linktree-admin.onrender.com//admin`);
-  console.log(`   API:   https://bawz-complex-linktree-admin.onrender.com//api/config\n`);
-});
+// ─── Export for Vercel, listen only when run directly ───────────
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n🎵 Bawz Complex Admin Server`);
+    console.log(`   Site:  http://localhost:${PORT}/`);
+    console.log(`   Admin: http://localhost:${PORT}/admin`);
+    console.log(`   API:   http://localhost:${PORT}/api/config\n`);
+  });
+}

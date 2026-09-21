@@ -434,7 +434,7 @@
     // ══════════════════════════════════════════════════════
     (async () => {
       try {
-        const res = await fetch('https://bawz-complex-linktree-admin.onrender.com/api/config');
+        const res = await fetch('/api/config');
         const json = await res.json();
         buildSite(json.data);
       } catch (e) {

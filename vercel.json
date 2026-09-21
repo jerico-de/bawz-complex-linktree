@@ -1,0 +1,8 @@
+{
+  "functions": { "api/index.js": { "includeFiles": "admin-ui/**" } },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/admin",    "destination": "/api" },
+    { "source": "/admin/(.*)", "destination": "/api" }
+  ]
+}
