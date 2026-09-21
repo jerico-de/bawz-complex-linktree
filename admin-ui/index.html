@@ -1380,8 +1380,20 @@ document.getElementById('edit-modal').addEventListener('click', e => {
 //  CLOUDINARY UPLOAD HELPER
 // ════════════════════════════════════════════════════════════════
 
+const CLOUDINARY_CLOUD_NAME    = 'lvmm9ua7';
+const CLOUDINARY_UPLOAD_PRESET = 'bawz-unsigned';
+
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Image upload failed.');
+  return data.secure_url;
+}
+
 async function uploadImage(targetInput, btn) {
-  // Create a hidden file input and trigger it
   const fileInput = document.createElement('input');
   fileInput.type   = 'file';
   fileInput.accept = 'image/*';
@@ -1395,15 +1407,7 @@ async function uploadImage(targetInput, btn) {
     btn.disabled    = true;
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res  = await fetch('/api/admin/upload', { method: 'POST', body: formData });
-      const json = await res.json();
-
-      if (!json.ok) throw new Error(json.error || 'Upload failed');
-
-      targetInput.value = json.data.url;
+      targetInput.value = await uploadToCloudinary(file);
       toast('Image uploaded!');
     } catch (e) {
       toast(e.message, false);
@@ -1454,7 +1458,7 @@ function renderMediaGrid(images) {
   }
   grid.innerHTML = images.map(img => `
     <div class="media-thumb" data-url="${esc(img.url)}" onclick="selectMediaThumb(this, '${esc(img.url)}')">
-      <img src="${esc(img.url)}" alt="${esc(img.filename)}" loading="lazy">
+      <img src="${esc(img.thumb || img.url)}" alt="${esc(img.filename)}" loading="lazy">
       <div class="media-thumb-name">${esc(img.filename)}</div>
     </div>
   `).join('');
@@ -1503,11 +1507,7 @@ async function handleMediaUpload(fileInput) {
   btn.disabled    = true;
 
   try {
-    const formData = new FormData();
-    formData.append('file', file);
-    const res  = await fetch('/api/admin/upload', { method: 'POST', body: formData });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error);
+    await uploadToCloudinary(file);
     toast('Uploaded! Refreshing library…');
     await loadMediaGrid();
   } catch (e) {

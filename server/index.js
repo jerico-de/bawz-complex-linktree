@@ -72,6 +72,7 @@ async function patchConfig(patch) {
 app.get('/api/config', async (req, res) => {
   try {
     const config = await getConfig();
+    res.json({ ok: true, data: config });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false, error: err.message });
